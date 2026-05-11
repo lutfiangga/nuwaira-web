@@ -8,6 +8,6 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
-<main>
+<main class="bg-white">
 	{@render children()}
 </main>

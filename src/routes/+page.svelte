@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HomeBenefitSection from '$lib/sections/homepage/home-benefit-section.svelte';
+	// import HomeBenefitSection from '$lib/sections/homepage/home-benefit-section.svelte';
 	import HomeHeroSection from '$lib/sections/homepage/home-hero-section.svelte';
 </script>
 
@@ -12,4 +12,4 @@
 </svelte:head>
 
 <HomeHeroSection />
-<HomeBenefitSection />
+<!-- <HomeBenefitSection /> -->

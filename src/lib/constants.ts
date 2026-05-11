@@ -9,15 +9,15 @@ export const NAV_MENU = [
     },
     {
         title: "Tentang Kami",
-        url: "/about"
+        url: "#"
     },
     {
         title: "Program",
-        url: "/programs"
+        url: "#"
     },
     {
         title: "Acara",
-        url: "/events"
+        url: "#"
     }
 ]
 

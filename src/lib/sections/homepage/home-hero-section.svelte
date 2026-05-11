@@ -5,10 +5,8 @@
 </script>
 
 <section
-	class="w-full min-h-screen flex flex-col relative isolate overflow-hidden bg-[url('/images/hero-bg.png')] bg-cover bg-top"
+	class="w-full min-h-screen flex flex-col relative overflow-hidden bg-[url('/images/hero-bg.png')] bg-cover bg-bottom"
 >
-	<!-- <AnimatedHeroBg /> -->
-
 	<img
 		src="/images/collaboration.svg"
 		alt="collabs"

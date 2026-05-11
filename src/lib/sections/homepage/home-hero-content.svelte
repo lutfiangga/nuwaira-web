@@ -15,7 +15,7 @@
 			class="max-w-4xl text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-white font-raleway"
 		>
 			Kuasai Keahlian Teknologi
-			<br />
+			<br />	
 			<span class="text-white">Bersama Nuwaira Academy</span>
 		</h1>
 
@@ -25,10 +25,10 @@
 		</p>
 
 		<div class="flex justify-between gap-2 md:gap-4 font-jakarta-plus *:text-base">
-			<Button size="lg" class="rounded-full bg-white text-black hover:bg-white/80">
-				Daftar Program
+			<Button href="https://instagram.com/nuwairaacademy" target="_blank" rel="noopener noreferrer" size="lg" class="rounded-full bg-white text-black hover:bg-white/80">
+				Ikuti Kami
 			</Button>
-			<Button size="lg" class="rounded-full bg-black text-white hover:bg-black/80">
+			<Button href="https://wa.me/6285235353944?text=Halo%20Nuwaira%2C%20saya%20ingin%20konsultasi%20program." target="_blank" rel="noopener noreferrer" size="lg" class="rounded-full bg-black text-white hover:bg-black/80">
 				Konsultasi Sekarang
 			</Button>
 		</div>
