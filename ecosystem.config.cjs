@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'nuwaira-web',
       script: 'bun',
-      args: 'run start',
+      args: 'run preview',
       interpreter: 'none',
       instances: 1,
       autorestart: true,
@@ -11,7 +11,6 @@ module.exports = {
       max_memory_restart: '512M',
       env: {
         NODE_ENV: 'production',
-        PORT: 3030
       }
     }
   ]
