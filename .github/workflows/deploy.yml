@@ -49,16 +49,10 @@ jobs:
             EOF
 
             echo "→ Installing dependencies..."
-            bun install --frozen-lockfile
+            npm install --force
 
             echo "→ Building..."
-            bun run build
-
-            echo "→ Running migrations..."
-            bun run db:push --force
-
-            echo "→ Running seeders..."
-            bun run db:seed
+            npm run build
 
             echo "→ Reloading app..."
             pm2 reload ecosystem.config.cjs --update-env

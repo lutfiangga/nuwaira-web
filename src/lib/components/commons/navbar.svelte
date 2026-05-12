@@ -57,7 +57,7 @@
 				{/each}
 
 				<Button
-					class="rounded-full !bg-white bg-transparent text-black hover:bg-white/10 hover:text-white"
+					class="rounded-full !bg-white bg-transparent text-black hover:bg-white/10"
 					size="lg"
 					href="https://wa.me/6285235353944?text=Halo%20Nuwaira%2C%20saya%20ingin%20bertanya%20tentang%20program%20belajar."
 					target="_blank"
