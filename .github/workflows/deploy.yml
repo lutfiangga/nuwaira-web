@@ -37,7 +37,7 @@ jobs:
           script: |
             set -e
 
-            cd /var/www/shake-shake
+            cd /var/www/nuwaira-web
 
             echo "→ Pulling latest code..."
             git pull origin main
