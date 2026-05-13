@@ -4,7 +4,7 @@
 	let {
 		title = 'Nuwaira Academy',
 		description = 'Leading Education & Training Provider for Students & Professionals',
-		image = '/meta.png',
+		image = '/images/meta.png',
 		url,
 		type = 'website'
 	}: {
