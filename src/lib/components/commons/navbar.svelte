@@ -38,8 +38,14 @@
 <Sheet.Root bind:open={mobileMenuOpen}>
 	<header class="sticky top-0 z-[70] w-full px-5 py-4 sm:px-8 lg:px-16">
 		<div class="mx-auto flex h-14 items-center justify-between gap-3">
-			<a href="/" class="inline-flex items-center shrink-0">
-				<img src="/images/logo.svg" alt="Nuwaira Academy" class="h-8 w-auto" />
+			<a href="/" class="inline-flex items-center shrink-0 group">
+				<img
+					src="/images/logo.svg "
+					alt="Nuwaira Academy"
+					class="h-8 w-auto transition-all duration-300 ease-in-out group-hover:scale-115"
+					loading="eager"
+					fetchpriority="high"
+				/>
 			</a>
 
 			<nav class="hidden md:flex items-center rounded-full p-1">
@@ -57,7 +63,7 @@
 				{/each}
 
 				<Button
-					class="rounded-full !bg-white bg-transparent text-black hover:bg-white/10"
+					class="rounded-full !bg-white bg-transparent text-black hover:bg-white/10 hover:scale-105 transition-all duration-300 ease-in-out"
 					size="lg"
 					href="https://wa.me/6285235353944?text=Halo%20Nuwaira%2C%20saya%20ingin%20bertanya%20tentang%20program%20belajar."
 					target="_blank"
