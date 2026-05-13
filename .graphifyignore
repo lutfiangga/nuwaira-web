@@ -22,9 +22,3 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-<<<<<<< HEAD
-graphify-out/
-=======
-.graphify_detect.json
-graphify-out
->>>>>>> ddb17baf4697a2a21f4913c6ed641c329a34d7f1

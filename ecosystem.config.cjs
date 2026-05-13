@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'nuwaira-web',
       script: 'bun',
-      args: 'run preview',
+      args: 'run preview -- --host 0.0.0.0 --port 4173 --strictPort',
       interpreter: 'none',
       instances: 1,
       autorestart: true,

@@ -53,6 +53,7 @@
 	<meta property="twitter:image" content={absoluteImage} />
 	<!-- Google tag (gtag.js) -->
 	{#if indexingPolicy.gtagId}
+<<<<<<< HEAD
 		<script
 			async
 			src="https://www.googletagmanager.com/gtag/js?id={indexingPolicy.gtagId}"
@@ -60,3 +61,9 @@
 		{@html buildGoogleTagManagerScript(indexingPolicy.gtagId)}
 	{/if}
 </svelte:head>
+=======
+		<script async src="https://www.googletagmanager.com/gtag/js?id={indexingPolicy.gtagId}"></script>
+		{@html buildGoogleTagManagerScript(indexingPolicy.gtagId)}
+	{/if}
+</svelte:head>
+>>>>>>> ddb17baf4697a2a21f4913c6ed641c329a34d7f1
