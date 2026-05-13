@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'nuwaira-web',
-      script: 'bun',
-      args: 'run preview -- --host 0.0.0.0 --port 4173 --strictPort',
+      script: 'npm',
+      args: 'run preview',
       interpreter: 'none',
       instances: 1,
       autorestart: true,
