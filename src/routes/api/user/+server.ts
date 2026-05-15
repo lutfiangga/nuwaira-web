@@ -68,7 +68,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	console.log("POST /api/user");
 
 	const body = await request.json();
-	const { id, username, password, age } = body;
+	const { id, username, password, age, email, roleId } = body;
 
 	if (!id || !username || !password) {
 		return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
@@ -80,6 +80,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		await db.insert(user).values({
 			id,
 			username,
+			email: email || `${username}@example.com`,
+			roleId: roleId || 'learner',
 			passwordHash,
 			age
 		});
@@ -96,7 +98,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 	console.log("PUT /api/user");
 
 	const body = await request.json();
-	const { id, username, password, age } = body;
+	const { id, username, password, age, email, roleId } = body;
 
 	if (!id) {
 		return new Response(JSON.stringify({ error: "User ID required" }), { status: 400 });
@@ -105,6 +107,8 @@ export const PUT: RequestHandler = async ({ request }) => {
 	try {
 		const updateData: any = {
 			username,
+			email,
+			roleId,
 			age
 		};
 

@@ -6,12 +6,13 @@ declare global {
 			user: {
 				id: string;
 				username: string;
+				roleId: string;
 				email?: string | null;
 				name?: string | null;
 				photo?: string | null;
 				age?: number | null;
 			} | null;
-			session: import('lucia').Session | null;
+			session: import('$lib/app/modules/user/models/user.schema').Session | null;
 		}
 	} // interface Error {}
 	// interface Locals {}
