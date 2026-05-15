@@ -12,7 +12,8 @@ export type FieldType =
     | 'switch'
     | 'file'
     | 'date'
-    | 'rich-text';
+    | 'rich-text'
+    | 'color';
 
 export interface BaseFieldConfig {
     name: string;
@@ -65,6 +66,10 @@ export interface RichTextFieldConfig extends BaseFieldConfig {
     type: 'rich-text';
 }
 
+export interface ColorFieldConfig extends BaseFieldConfig {
+    type: 'color';
+}
+
 export interface ComboboxFieldConfig extends BaseFieldConfig {
     type: 'combobox';
     options: SelectOption[];
@@ -84,7 +89,8 @@ export type FieldConfig =
     | CheckboxFieldConfig
     | FileFieldConfig
     | CustomComponentConfig
-    | RichTextFieldConfig;
+    | RichTextFieldConfig
+    | ColorFieldConfig;
 
 // Layouts
 export interface BaseLayout {

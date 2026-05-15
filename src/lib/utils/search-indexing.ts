@@ -26,7 +26,19 @@ const SEARCH_INDEXING_PROFILES = {
 		robotsMeta: null,
 		googleBotMeta: null,
 		xRobotsTag: null,
-		robotsDirectives: ['User-agent: *', 'Allow: /', 'Disallow: /panel/', 'Disallow: /login'],
+		robotsDirectives: [
+			'User-agent: *',
+			'Allow: /',
+			'Disallow: /dashboard',
+			'Disallow: /users',
+			'Disallow: /students',
+			'Disallow: /classes',
+			'Disallow: /materials',
+			'Disallow: /enrollments',
+			'Disallow: /settings',
+			'Disallow: /rbac',
+			'Disallow: /login'
+		],
 		sitemapEntries: PUBLIC_SITEMAP_ENTRIES,
 		includeSitemap: true,
 		gtagId: ''

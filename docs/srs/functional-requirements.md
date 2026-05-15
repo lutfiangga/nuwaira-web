@@ -1,24 +1,62 @@
-# SRS - Functional Requirements (Dynamic First)
+# Functional Requirements
 
-## FR-DYN-001 Module Registry
-Sistem harus punya module registry terpusat untuk mendefinisikan resource, route, permission, dan metadata UI.
+## FR-001 Bootstrap Role
+- Sistem harus membuat role awal `superadmin` sebagai bootstrap.
+- Role lain tidak wajib ada di seed.
 
-## FR-DYN-002 Dynamic Menu
-Sistem harus generate menu panel berdasarkan permission map user.
+## FR-002 Role Management
+- Superadmin harus bisa:
+  - create role
+  - update role
+  - delete role (kecuali bootstrap superadmin)
+  - assign permission ke role
 
-## FR-DYN-003 Dynamic CRUD Policy
-Setiap action `create/read/update/delete` wajib melalui guard policy.
+## FR-003 Permission Management
+- Superadmin harus bisa:
+  - create permission code baru
+  - update metadata permission
+  - delete permission
+- Permission code harus unik.
 
-## FR-DYN-004 Dynamic Form Renderer
-Setiap form CRUD wajib dibangun dari schema config, bukan hardcoded component tree.
+## FR-004 Panel Module Registry
+- Superadmin harus bisa kelola daftar menu panel via DB:
+  - module key
+  - title
+  - url
+  - icon
+  - sort order
+  - visibility aktif/nonaktif
+  - permission untuk lihat menu
 
-## FR-DYN-005 Dynamic Table Renderer
-Setiap table/list wajib dibangun dari column schema config.
+## FR-005 Route Permission Mapping
+- Superadmin harus bisa kelola mapping route ke permission via DB:
+  - route key
+  - operation key (`view/create/update/delete/...`)
+  - optional route path/method metadata
+  - permission code yang wajib dimiliki
+- Semua route panel harus melewati resolver mapping ini.
 
-## FR-DYN-006 Role Governance
-Superadmin wajib bisa:
-- set default register role
-- atur permission matrix per role
+## FR-006 Authorization Runtime
+- Saat request route panel:
+  - sistem resolve mapping route+operation -> permission code
+  - sistem cek role user punya permission code
+  - jika tidak punya, return `403`
 
-## FR-DYN-007 Extensible Module Contract
-Modul baru harus bisa ditambahkan tanpa modifikasi core layout dan core auth flow.
+## FR-007 Default Register Role
+- Superadmin harus bisa set role default untuk user register baru.
+- Register flow harus selalu baca nilai setting aktif.
+
+## FR-008 Dynamic Menu Rendering
+- Sidebar panel harus mengambil menu dari registry DB.
+- Menu tampil hanya jika:
+  - module aktif
+  - module visible
+  - user punya permission menu (kecuali superadmin bypass)
+
+## FR-009 Domain Coverage (Current)
+- Modul operasional inti yang aktif:
+  - users
+  - students
+  - classes
+  - materials
+  - enrollments

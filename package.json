@@ -59,6 +59,7 @@
 	},
 	"dependencies": {
 		"@node-rs/argon2": "^2.0.2",
+		"cloudinary": "^2.10.0",
 		"file-saver": "^2.0.5",
 		"leaflet": "^1.9.4",
 		"postgres": "^3.4.7",

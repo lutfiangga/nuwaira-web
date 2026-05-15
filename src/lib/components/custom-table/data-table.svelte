@@ -202,20 +202,20 @@
 	{/if}
 
 	<!-- Table -->
-	<div class="rounded-md border w-full overflow-x-auto">
+	<div class="w-full overflow-x-auto rounded-2xl border bg-card">
 		<Table.Root class="w-full">
 			<Table.Header>
 				<Table.Row>
 					{#each activeColumns as column}
 						{#if column.type === 'select'}
-							<Table.Head class="w-[50px]">
+							<Table.Head class="w-12">
 								<Checkbox
 									onCheckedChange={(checked) => toggleAllRows(checked ?? false)}
 									checked={allSelected}
 								/>
 							</Table.Head>
 						{:else if column.type === 'actions'}
-							<Table.Head class="w-[100px]">Actions</Table.Head>
+							<Table.Head class="w-24">Actions</Table.Head>
 						{:else}
 							<Table.Head
 								class={column.sortable !== false ? 'cursor-pointer' : ''}
@@ -257,7 +257,7 @@
 									{#if column.accessorKey && item[column.accessorKey] && !imageErrors[`${item.id}-${column.accessorKey}`]}
 										<button
 											type="button"
-											class="cursor-pointer hover:opacity-80 transition-opacity"
+											class="cursor-pointer"
 											onclick={() => openPreview(item[column.accessorKey!])}
 										>
 											<img
@@ -292,13 +292,13 @@
 	</div>
 
 	<!-- Pagination logic omitted for brevity, adding back same logic as before -->
-	<div class="flex items-center justify-between">
-		<div class="flex items-center gap-2">
+	<div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+		<div class="flex flex-wrap items-center gap-2">
 			<span class="text-sm text-muted-foreground">Rows per page:</span>
 			<select
 				value={perPage}
 				onchange={(e) => changePerPage(Number(e.currentTarget.value))}
-				class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+				class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground"
 			>
 				<option value={5}>5</option>
 				<option value={10}>10</option>
@@ -315,7 +315,7 @@
 			{/if}
 		</div>
 
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-3">
 			{#if totalPages > 1}
 				<div class="flex items-center gap-2">
 					<Button

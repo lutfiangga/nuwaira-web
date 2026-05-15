@@ -1,10 +1,8 @@
-# Design System UML - Dynamic LMS
+# UML Baseline
 
-Folder ini berisi model UML dasar untuk engine LMS dinamis.
-
-## Artifacts
-- `use-case.md`
-- `domain-class.md`
-- `sequence-rbac-authorization.md`
-- `sequence-dynamic-crud-rendering.md`
-- `activity-module-onboarding.md`
+Diagram UML aktif untuk arsitektur LMS dinamis:
+- use case governance RBAC oleh superadmin
+- class diagram entitas role/permission/module/route mapping
+- sequence authorization berbasis route registry
+- sequence rendering sidebar/menu dinamis
+- activity onboarding modul baru tanpa hardcode auth core

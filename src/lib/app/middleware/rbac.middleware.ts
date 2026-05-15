@@ -1,13 +1,6 @@
 import { error, redirect, type RequestEvent } from '@sveltejs/kit';
 import { RbacService } from '$lib/app/modules/rbac/services/rbac.service';
-import type { PermissionAction, PermissionResource } from '$lib/app/modules/rbac/config/rbac.config';
-
-const ACTION_PERMISSION_MAP: Record<string, PermissionAction> = {
-	create: 'create',
-	update: 'update',
-	delete: 'delete',
-	bulkDelete: 'delete'
-};
+import { CRUD_ROUTE_OPERATION_MAP } from '$lib/app/modules/rbac/config/rbac.config';
 
 export async function getAccessProfileFromEvent(event: RequestEvent) {
 	if (!event.locals.user) {
@@ -19,35 +12,49 @@ export async function getAccessProfileFromEvent(event: RequestEvent) {
 
 export async function requirePermission(
 	event: RequestEvent,
-	resource: PermissionResource,
-	action: PermissionAction = 'read'
+	routeKey: string,
+	operationKey = 'read'
 ) {
 	const accessProfile = await getAccessProfileFromEvent(event);
-	if (RbacService.can(accessProfile, resource, action)) {
+	const requiredPermissionCode = await RbacService.resolveRequiredPermissionCode(routeKey, operationKey);
+	if (!requiredPermissionCode) {
+		if (accessProfile.isSuperadmin) {
+			return accessProfile;
+		}
+
+		const fallbackPermissionCode = `${routeKey}:${operationKey}`;
+		if (RbacService.can(accessProfile, fallbackPermissionCode)) {
+			return accessProfile;
+		}
+
+		throw error(403, `Forbidden: route access is not mapped (${routeKey}:${operationKey})`);
+	}
+
+	if (RbacService.can(accessProfile, requiredPermissionCode)) {
 		return accessProfile;
 	}
 
-	throw error(403, `Forbidden: missing permission ${resource}:${action}`);
+	throw error(403, `Forbidden: missing permission ${requiredPermissionCode}`);
 }
 
 export function guardPermission<T>(
-	resource: PermissionResource,
-	action: PermissionAction,
+	routeKey: string,
+	operationKey: string,
 	handler: (event: RequestEvent) => Promise<T>
 ) {
 	return async (event: RequestEvent) => {
-		await requirePermission(event, resource, action);
+		await requirePermission(event, routeKey, operationKey);
 		return handler(event);
 	};
 }
 
 export function guardCrudActions<T extends Record<string, (event: RequestEvent) => Promise<unknown>>>(
-	resource: PermissionResource,
+	routeKey: string,
 	actions: T
 ): T {
 	const wrapped = Object.entries(actions).map(([actionName, handler]) => {
-		const permissionAction = ACTION_PERMISSION_MAP[actionName] || 'update';
-		return [actionName, guardPermission(resource, permissionAction, handler)] as const;
+		const operationKey = CRUD_ROUTE_OPERATION_MAP[actionName as keyof typeof CRUD_ROUTE_OPERATION_MAP] || 'update';
+		return [actionName, guardPermission(routeKey, operationKey, handler)] as const;
 	});
 
 	return Object.fromEntries(wrapped) as T;

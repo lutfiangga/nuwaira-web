@@ -7,6 +7,7 @@ import type { CreateUserDTO, UpdateUserDTO } from '../requests/user.request';
 import type { UpdateProfileDTO, ChangePasswordDTO } from '../requests/profile.request';
 
 import { FileHelper } from '$lib/app/helpers/file.helper';
+import { RbacService } from '$lib/app/modules/rbac/services/rbac.service';
 
 /**
  * Service untuk menangani logika bisnis terkait Pengguna (User).
@@ -76,6 +77,7 @@ export class UserService {
      */
     static async create(data: CreateUserDTO) {
         const passwordHash = await hashPassword(data.password);
+        const roleId = data.roleId || (await RbacService.getDefaultRegisterRoleId());
 
         let photoPath = null;
         if (data.photo && data.photo.size > 0) {
@@ -86,7 +88,7 @@ export class UserService {
             id: crypto.randomUUID(),
             username: data.username,
             email: data.email || `${data.username}@example.com`,
-            roleId: data.roleId || 'learner',
+            roleId,
             passwordHash: passwordHash,
             age: data.age ?? null,
             photo: photoPath

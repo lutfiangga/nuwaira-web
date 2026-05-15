@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const CreateUserSchema = z.object({
     username: z.string().min(1, "Username is required"),
     email: z.string().email("Invalid email").optional(),
-    roleId: z.string().min(1, 'Role is required').optional().default('learner'),
+    roleId: z.string().min(1, 'Role is required').optional(),
     password: z.string().min(1, "Password is required"),
     age: z.coerce.number().optional().nullable(),
     photo: z.instanceof(File).optional(),

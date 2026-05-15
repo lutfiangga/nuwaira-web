@@ -10,7 +10,7 @@
 	<img
 		src="/images/collaboration.svg"
 		alt="collabs"
-		class="absolute top-0 -right-24 lg:right-0 w-[24rem] lg:w-[44rem] h-auto will-change-transform select-none"
+		class="absolute top-0 -right-24 lg:right-0 w-[24rem] lg:w-176 h-auto will-change-transform select-none"
 	/>
 	<Navbar />
 	<HomeHeroContent />

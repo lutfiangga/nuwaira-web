@@ -2,13 +2,18 @@
 
 ```mermaid
 sequenceDiagram
-  participant UI as Panel Page
-  participant REG as Module Registry
-  participant FB as Form Builder
-  participant TB as Table Builder
+  participant L as Panel Layout
+  participant R as RBAC Service
+  participant D as DB
+  participant P as Panel Page
+  participant F as Form Builder
+  participant T as Table Builder
 
-  UI->>REG: get module config(resource)
-  REG-->>UI: form schema + table schema + action map
-  UI->>FB: render(form schema)
-  UI->>TB: render(table schema)
+  L->>R: getVisiblePanelMenus(accessProfile)
+  R->>D: select active panel_module ordered by sort_order
+  D-->>R: module rows + menu permission code
+  R-->>L: filtered menus by granted permission
+
+  P->>F: render form schema (module forms/*)
+  P->>T: render table schema (module columns)
 ```

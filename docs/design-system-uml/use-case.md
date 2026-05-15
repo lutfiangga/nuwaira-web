@@ -2,16 +2,18 @@
 
 ```mermaid
 flowchart LR
-  SA[Superadmin] --> UC1((Set Default Register Role))
-  SA --> UC2((Manage Role Permission Matrix))
-  SA --> UC3((Access Dynamic Panel Menu))
+  SA[Superadmin] --> UC1((Create or Update Roles))
+  SA --> UC2((Create or Update Permissions))
+  SA --> UC3((Assign Permissions to Roles))
+  SA --> UC4((Manage Panel Module Registry))
+  SA --> UC5((Manage Route Permission Mapping))
+  SA --> UC6((Set Default Register Role))
 
-  ADMIN[Admin] --> UC3
-  ADMIN --> UC4((CRUD Domain Modules by Permission))
+  OP[Operator Role Custom] --> UC7((Access Panel Menus by Permission))
+  OP --> UC8((Run CRUD by Granted Operations))
 
-  INS[Instructor] --> UC3
-  INS --> UC4
+  IN[Instructor Role Custom] --> UC7
+  IN --> UC8
 
-  LEARNER[Learner] --> UC5((Register))
-  LEARNER --> UC6((Access Allowed Learning Features))
+  PUB[Public User] --> UC9((Register Account))
 ```

@@ -39,7 +39,7 @@
 	};
 </script>
 
-<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
 	<div class="flex items-center gap-2 flex-1">
 		<div class="relative w-full max-w-sm">
 			<Input
@@ -101,7 +101,7 @@
 					View
 				</Button>
 			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="w-[150px]">
+			<DropdownMenu.Content align="end" class="w-40">
 				<DropdownMenu.Label>Show columns</DropdownMenu.Label>
 				<DropdownMenu.Separator />
 				{#each columnKeys as key}

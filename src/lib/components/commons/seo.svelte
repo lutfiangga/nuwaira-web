@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { getSearchIndexingPolicy, buildGoogleTagManagerScript } from '$lib/utils/search-indexing';
 	let {
-		title = 'Nuwaira Academy',
+		title,
 		description = 'Leading Education & Training Provider for Students & Professionals',
 		image = '/images/meta.png',
 		url,
@@ -17,9 +17,12 @@
 
 	let baseUrl = $derived(url || $page.url.origin);
 	let indexingPolicy = $derived(getSearchIndexingPolicy($page.url));
-	let displayTitle = $derived($page.url.pathname === '/' ? title : `${title} | Nuwaira Academy`);
+	const brandName = $derived($page.data?.brand?.brandName || 'Nuwaira Academy');
+	const effectiveTitle = $derived(title || brandName);
+	let displayTitle = $derived($page.url.pathname === '/' ? effectiveTitle : `${effectiveTitle} | ${brandName}`);
 	let absoluteImage = $derived(image.startsWith('http') ? image : new URL(image, baseUrl).href);
 	let canonicalURL = $derived(new URL($page.url.pathname, baseUrl).href);
+	const gtagId = $derived($page.data?.brand?.gtagId || indexingPolicy.gtagId);
 </script>
 
 <svelte:head>
@@ -52,11 +55,11 @@
 	<meta property="twitter:description" content={description} />
 	<meta property="twitter:image" content={absoluteImage} />
 	<!-- Google tag (gtag.js) -->
-	{#if indexingPolicy.gtagId}
+	{#if gtagId}
 		<script
 			async
-			src="https://www.googletagmanager.com/gtag/js?id={indexingPolicy.gtagId}"
+			src="https://www.googletagmanager.com/gtag/js?id={gtagId}"
 		></script>
-		{@html buildGoogleTagManagerScript(indexingPolicy.gtagId)}
+		{@html buildGoogleTagManagerScript(gtagId)}
 	{/if}
 </svelte:head>

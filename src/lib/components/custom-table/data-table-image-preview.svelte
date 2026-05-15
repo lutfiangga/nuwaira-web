@@ -13,7 +13,7 @@
 		initialIndex?: number;
 	} = $props();
 
-	let currentIndex = $state(initialIndex);
+	let currentIndex = $state(0);
 
 	// Reset index when dialog opens
 	$effect(() => {

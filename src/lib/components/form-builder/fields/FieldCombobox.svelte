@@ -26,6 +26,13 @@
 			await config.onSelect(selectedValue);
 		}
 	}
+
+	const normalizedItems = $derived(
+		config.options.map((option) => ({
+			value: String(option.value),
+			label: option.label
+		}))
+	);
 </script>
 
 <div class="space-y-2 w-full {config.class || ''}">
@@ -36,7 +43,7 @@
 		{/if}
 	</Label>
 	<Combobox
-		items={config.options}
+		items={normalizedItems}
 		placeholder={config.placeholder || `Select ${config.label.toLowerCase()}...`}
 		bind:value={localValue}
 		disabled={config.disabled}

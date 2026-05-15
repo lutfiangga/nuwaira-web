@@ -30,7 +30,7 @@ export function isLoginWithRole(event: RequestEvent, allowedRoles: string[]) {
 
     const userRole = event.locals.user.roleId;
     if (!allowedRoles.includes(userRole)) {
-        redirect(302, '/panel/dashboard');
+        redirect(302, '/dashboard');
     }
 
     return {
@@ -45,7 +45,7 @@ export function isLoginWithRole(event: RequestEvent, allowedRoles: string[]) {
  */
 export function isGuest(event: RequestEvent) {
     if (event.locals.user) {
-        redirect(302, '/panel/dashboard');
+        redirect(302, '/dashboard');
     }
     return {};
 }

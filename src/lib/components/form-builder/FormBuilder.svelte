@@ -11,6 +11,7 @@
 	import FieldCheckbox from './fields/FieldCheckbox.svelte';
 	import FieldFile from './fields/FieldFile.svelte';
 	import FieldRichText from './fields/FieldRichText.svelte';
+	import FieldColor from './fields/FieldColor.svelte';
 
 	// Import Custom Components
 	import LocationSearch from '$lib/components/location-search.svelte';
@@ -150,6 +151,8 @@
 		<FieldFile config={item} bind:value={data[item.name]} />
 	{:else if item.type === 'rich-text'}
 		<FieldRichText config={item} bind:value={data[item.name]} />
+	{:else if item.type === 'color'}
+		<FieldColor config={item} bind:value={data[item.name]} />
 	{:else if item.type === 'custom'}
 		{#if item.component === 'LocationSearch'}
 			<LocationSearch bind:latitude={data.latitude} bind:longitude={data.longitude} />

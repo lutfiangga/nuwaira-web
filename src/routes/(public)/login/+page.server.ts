@@ -10,7 +10,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/panel/dashboard');
+		return redirect(302, '/dashboard');
 	}
 
 	return {};
@@ -81,7 +81,7 @@ export const actions: Actions = {
 				return fail(503, { message: 'Database is unavailable. Please try again later.' });
 			}
 
-			return redirect(302, '/panel/dashboard');
+			return redirect(302, '/dashboard');
 		}
 
 		const loginIdentifierInput = formData.get('username');
@@ -120,7 +120,7 @@ export const actions: Actions = {
 			const session = await auth.createSession(sessionToken, existingUser.id);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-			return redirect(302, '/panel/dashboard');
+			return redirect(302, '/dashboard');
 		} catch (error) {
 			console.error('Login Error:', error);
 			return fail(503, { message: 'Database is unavailable. Please try again later.' });

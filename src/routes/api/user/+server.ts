@@ -5,6 +5,7 @@ import { eq, like, asc, desc } from 'drizzle-orm';
 
 import { user } from '$lib/app/database/schema';
 import { hashPassword } from '$lib/app/server/auth';
+import { RbacService } from '$lib/app/modules/rbac/services/rbac.service';
 
 // --- GET (pagination, sorting, search) ---
 export const GET: RequestHandler = async ({ url }) => {
@@ -76,12 +77,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		const passwordHash = await hashPassword(password);
+		const fallbackRoleId = await RbacService.getDefaultRegisterRoleId();
 
 		await db.insert(user).values({
 			id,
 			username,
 			email: email || `${username}@example.com`,
-			roleId: roleId || 'learner',
+			roleId: roleId || fallbackRoleId,
 			passwordHash,
 			age
 		});

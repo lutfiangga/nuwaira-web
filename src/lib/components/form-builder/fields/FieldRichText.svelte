@@ -8,76 +8,76 @@
         value = $bindable()
     } = $props();
 
-    let editorContainer: HTMLElement;
+    let editorContainer = $state<HTMLElement | null>(null);
     let quill: any = null;
     let mounted = $state(false);
 
-    onMount(async () => {
+    onMount(() => {
         if (!browser) return;
 
         mounted = true;
+        let active = true;
 
-        // Dynamically import Quill only in browser
-        const QuillModule = await import('quill');
-        const Quill = QuillModule.default;
-        
-        // Import CSS dynamically
-        await import('quill/dist/quill.snow.css');
+        void (async () => {
+            const QuillModule = await import('quill');
+            const Quill = QuillModule.default;
+            await import('quill/dist/quill.snow.css');
 
-        // Initialize Quill
-        quill = new Quill(editorContainer, {
-            theme: 'snow',
-            placeholder: config.placeholder || 'Write something...',
-            modules: {
-                toolbar: {
-                    container: [
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        [{ 'font': [] }],
-                        [{ 'size': ['small', false, 'large', 'huge'] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        [{ 'direction': 'rtl' }],
-                        [{ 'align': [] }],
-                        ['blockquote', 'code-block'],
-                        ['link', 'image', 'video'],
-                        ['clean']
-                    ],
-                    handlers: {
-                        image: imageHandler,
-                        video: videoHandler
+            if (!active || !editorContainer) return;
+
+            quill = new Quill(editorContainer, {
+                theme: 'snow',
+                placeholder: config.placeholder || 'Write something...',
+                modules: {
+                    toolbar: {
+                        container: [
+                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                            [{ 'font': [] }],
+                            [{ 'size': ['small', false, 'large', 'huge'] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'script': 'sub'}, { 'script': 'super' }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                            [{ 'direction': 'rtl' }],
+                            [{ 'align': [] }],
+                            ['blockquote', 'code-block'],
+                            ['link', 'image', 'video'],
+                            ['clean']
+                        ],
+                        handlers: {
+                            image: imageHandler,
+                            video: videoHandler
+                        }
                     }
-                }
-            },
-            formats: [
-                'header', 'font', 'size',
-                'bold', 'italic', 'underline', 'strike',
-                'color', 'background',
-                'script',
-                'list',
-                'indent',
-                'direction', 'align',
-                'blockquote', 'code-block',
-                'link', 'image', 'video'
-            ]
-        });
+                },
+                formats: [
+                    'header', 'font', 'size',
+                    'bold', 'italic', 'underline', 'strike',
+                    'color', 'background',
+                    'script',
+                    'list',
+                    'indent',
+                    'direction', 'align',
+                    'blockquote', 'code-block',
+                    'link', 'image', 'video'
+                ]
+            });
 
-        // Set initial content
-        if (value) {
-            const delta = quill.clipboard.convert({ html: value });
-            quill.setContents(delta, 'silent');
-        }
-
-        // Listen for text changes
-        quill.on('text-change', (delta: any, oldDelta: any, source: string) => {
-            if (source === 'user') {
-                value = quill?.getSemanticHTML() || '';
+            if (value) {
+                const delta = quill.clipboard.convert({ html: value });
+                quill.setContents(delta, 'silent');
             }
-        });
+
+            quill.on('text-change', (_delta: any, _oldDelta: any, source: string) => {
+                if (source === 'user') {
+                    value = quill?.getSemanticHTML() || '';
+                }
+            });
+        })();
 
         return () => {
+            active = false;
             quill = null;
         };
     });

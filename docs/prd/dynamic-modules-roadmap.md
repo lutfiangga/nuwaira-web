@@ -1,17 +1,28 @@
-# PRD - Dynamic Modules Roadmap
+# Dynamic Modules Roadmap
 
-## Phase 1
-- RBAC engine + default role setting.
-- User, Student, Class, Material, Enrollment modules under common CRUD contract.
+## Phase 1 - Dynamic Governance (Now)
+- Ubah RBAC jadi full DB-driven.
+- Tambah registry untuk:
+  - panel modules/menu
+  - route-permission mapping
+- Hilangkan role/menu/policy hardcode dari codebase.
+- Jadikan docs sebagai baseline dynamic architecture.
 
-## Phase 2
-- Dynamic Course Catalog + Learning Path.
-- Quiz/Assessment engine berbasis config question type.
+## Phase 2 - LMS Public Experience
+- Public class catalog.
+- Public class detail + enrollment CTA.
+- Learner dashboard baseline (kelas aktif + progress ringkas).
 
-## Phase 3
-- Dynamic certificate rules.
-- Dynamic analytics widgets.
+## Phase 3 - Learning Operations
+- Session schedule + attendance.
+- Assignment tracking.
+- Basic progress milestone per class.
 
-## Phase 4
-- Multi-tenant policy layer.
-- Marketplace-style extension modules.
+## Phase 4 - Growth Modules
+- Assessment/quiz module.
+- Certificate module.
+- Notification module (email/WA queue-ready).
+
+## Phase 5 - Monetization (Optional)
+- Payment/billing module.
+- Promo/discount rule module.
