@@ -71,7 +71,7 @@ export async function validateSessionToken(token: string) {
 		const [result] = await db
 			.select({
 				// Sesuaikan kolom user yang ingin dikembalikan
-				user: { id: table.user.id, username: table.user.username },
+				user: { id: table.user.id, username: table.user.username, roleId: table.user.roleId },
 				session: table.session
 			})
 			.from(table.session)

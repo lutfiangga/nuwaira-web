@@ -10,9 +10,9 @@ export class DatabaseSeeder {
         if (existingUsers.length === 0) {
             const passwordHash = await hashPassword('password123');
             const users: typeof user.$inferInsert[] = [
-                { id: crypto.randomUUID(), username: 'admin', email: 'admin@example.com', name: 'Admin User', age: 30, passwordHash },
-                { id: crypto.randomUUID(), username: 'user1', email: 'user1@example.com', name: 'User One', age: 25, passwordHash },
-                { id: crypto.randomUUID(), username: 'user2', email: 'user2@example.com', name: 'User Two', age: 28, passwordHash },
+                { id: crypto.randomUUID(), username: 'admin', email: 'admin@example.com', roleId: 'superadmin', name: 'Admin User', age: 30, passwordHash },
+                { id: crypto.randomUUID(), username: 'user1', email: 'user1@example.com', roleId: 'instructor', name: 'User One', age: 25, passwordHash },
+                { id: crypto.randomUUID(), username: 'user2', email: 'user2@example.com', roleId: 'learner', name: 'User Two', age: 28, passwordHash },
             ];
             await db.insert(user).values(users);
             return `Seeded ${users.length} users.`;

@@ -1,6 +1,6 @@
 import { db } from '$lib/app/database';
 import { user } from '../models/user.schema';
-import { eq, ilike, asc, desc, sql } from 'drizzle-orm';
+import { eq, ilike, asc, desc, or, sql } from 'drizzle-orm';
 import { hashPassword, verifyPassword } from '$lib/app/server/auth';
 import { withDbFallback, withDbNullable } from '$lib/app/server/db';
 import type { CreateUserDTO, UpdateUserDTO } from '../requests/user.request';
@@ -31,11 +31,15 @@ export class UserService {
                 const offset = (page - 1) * pageSize;
 
                 // Clause Where
-                const whereClause = search ? ilike(user.username, `%${search}%`) : undefined;
+                const whereClause = search
+                    ? or(ilike(user.username, `%${search}%`), ilike(user.email, `%${search}%`))
+                    : undefined;
 
                 // Mapping Kolom Sortir
                 const sortMap: Record<string, any> = {
                     username: user.username,
+                    email: user.email,
+                    roleId: user.roleId,
                     age: user.age,
                     id: user.id
                 };
@@ -82,6 +86,7 @@ export class UserService {
             id: crypto.randomUUID(),
             username: data.username,
             email: data.email || `${data.username}@example.com`,
+            roleId: data.roleId || 'learner',
             passwordHash: passwordHash,
             age: data.age ?? null,
             photo: photoPath
@@ -98,6 +103,8 @@ export class UserService {
 
         const updateData: Record<string, any> = {
             username: data.username,
+            email: data.email || existing.email,
+            roleId: data.roleId || existing.roleId,
             age: data.age ?? null
         };
 

@@ -49,6 +49,7 @@ const authenticationHandle: Handle = async ({ event, resolve }) => {
 				.select({
 					id: userTable.id,
 					username: userTable.username,
+					roleId: userTable.roleId,
 					email: userTable.email,
 					name: userTable.name,
 					photo: userTable.photo,
