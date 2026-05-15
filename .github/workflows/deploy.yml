@@ -55,6 +55,6 @@ jobs:
             npm run build
 
             echo "→ Reloading app..."
-            pm2 reload ecosystem.config.cjs --update-env
+            ${{ secrets.PM2 }} reload ecosystem.config.cjs --update-env
 
             echo "✓ Deploy selesai!"

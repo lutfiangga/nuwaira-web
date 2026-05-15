@@ -1,7 +1,7 @@
 import { hash, verify } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import * as auth from '$lib/app/server/auth';
 import { db } from '$lib/app/database';
 import * as table from '$lib/app/database/schema';
@@ -15,13 +15,89 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
-	login: async (event) => {
+	default: async (event) => {
 		const formData = await event.request.formData();
-		const username = formData.get('username');
-		const password = formData.get('password');
+		const intent = formData.get('intent');
+		const passwordInput = formData.get('password');
+
+		if (!validatePassword(passwordInput)) {
+			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
+		}
+
+		const password = passwordInput;
+
+		if (intent === 'register') {
+			const usernameInput = formData.get('username');
+			const emailInput = formData.get('email');
+
+			if (!validateUsername(usernameInput)) {
+				return fail(400, {
+					message: 'Invalid username (min 3, max 31 characters, alphanumeric only)'
+				});
+			}
+
+			if (!validateEmail(emailInput)) {
+				return fail(400, { message: 'Invalid email address' });
+			}
+
+			const username = usernameInput;
+			const email = emailInput.toLowerCase();
+
+			try {
+				const user = await db.select().from(table.user).where(eq(table.user.username, username));
+				if (user.length > 0) {
+					return fail(400, { message: 'Username already taken' });
+				}
+
+				const existingEmail = await db.select().from(table.user).where(eq(table.user.email, email));
+				if (existingEmail.length > 0) {
+					return fail(400, { message: 'Email already registered' });
+				}
+
+				const userId = generateUserId();
+				const passwordHash = await hash(password, {
+					memoryCost: 19456,
+					timeCost: 2,
+					outputLen: 32,
+					parallelism: 1
+				});
+
+				await db.insert(table.user).values({
+					id: userId,
+					username,
+					email,
+					passwordHash
+				});
+
+				const sessionToken = auth.generateSessionToken();
+				const session = await auth.createSession(sessionToken, userId);
+				auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			} catch (error) {
+				console.error('Register Error:', error);
+				return fail(503, { message: 'Database is unavailable. Please try again later.' });
+			}
+
+			return redirect(302, '/panel/dashboard');
+		}
+
+		const loginIdentifierInput = formData.get('username');
+		if (!validateLoginIdentifier(loginIdentifierInput)) {
+			return fail(400, { message: 'Username atau email wajib diisi' });
+		}
+
+		const loginIdentifier = loginIdentifierInput.trim();
+		const loginIdentifierLower = loginIdentifier.toLowerCase();
 
 		try {
-			const results = await db.select().from(table.user).where(eq(table.user.username, username));
+			const results = await db
+				.select()
+				.from(table.user)
+				.where(
+					or(
+						eq(table.user.username, loginIdentifier),
+						eq(table.user.email, loginIdentifierLower)
+					)
+				);
 
 			const existingUser = results.at(0);
 			if (!existingUser) {
@@ -47,44 +123,6 @@ export const actions: Actions = {
 			console.error('Login Error:', error);
 			return fail(503, { message: 'Database is unavailable. Please try again later.' });
 		}
-	},
-	register: async (event) => {
-		const formData = await event.request.formData();
-		const username = formData.get('username');
-		const password = formData.get('password');
-
-		try {
-			const user = await db.select().from(table.user).where(eq(table.user.username, username));
-
-			if (user.length > 0) {
-				return fail(400, { message: 'Username already taken' });
-			}
-			if (!validateUsername(username)) {
-				return fail(400, { message: 'Invalid username (min 3, max 31 characters, alphanumeric only)' });
-			}
-			if (!validatePassword(password)) {
-				return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
-			}
-
-			const userId = generateUserId();
-			const passwordHash = await hash(password, {
-				// recommended minimum parameters
-				memoryCost: 19456,
-				timeCost: 2,
-				outputLen: 32,
-				parallelism: 1
-			});
-
-			await db.insert(table.user).values({ id: userId, username, passwordHash });
-
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch (error) {
-			console.error('Register Error:', error);
-			return fail(503, { message: 'Database is unavailable. Please try again later.' });
-		}
-		return redirect(302, '/panel/dashboard');
 	}
 };
 
@@ -106,4 +144,17 @@ function validateUsername(username: unknown): username is string {
 
 function validatePassword(password: unknown): password is string {
 	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
+}
+
+function validateEmail(email: unknown): email is string {
+	return (
+		typeof email === 'string' &&
+		email.length > 3 &&
+		email.length <= 254 &&
+		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+	);
+}
+
+function validateLoginIdentifier(value: unknown): value is string {
+	return typeof value === 'string' && value.trim().length > 0;
 }

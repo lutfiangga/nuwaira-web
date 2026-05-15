@@ -9,7 +9,7 @@ export const menu = pgTable('menu', {
     images: json('images').$type<string[]>().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
-});
+}).enableRLS();
 
 export type Menu = typeof menu.$inferSelect;
 export type NewMenu = typeof menu.$inferInsert;

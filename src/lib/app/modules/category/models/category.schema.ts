@@ -6,6 +6,6 @@ export const category = pgTable('category', {
     description: text('description'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow()
-});
+}).enableRLS();
 
 export type Category = typeof category.$inferSelect;

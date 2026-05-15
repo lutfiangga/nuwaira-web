@@ -29,6 +29,10 @@
 	const routes = [
 		{ title: 'Dashboard', url: prefix + 'dashboard', icon: LayoutDashboard },
 		{ title: 'Users', url: prefix + 'users', icon: Users },
+		{ title: 'Students', url: prefix + 'students', icon: Users },
+		{ title: 'Classes', url: prefix + 'classes', icon: Package },
+		{ title: 'Materials', url: prefix + 'materials', icon: FolderOpen },
+		{ title: 'Enrollments', url: prefix + 'enrollments', icon: ChartColumnStacked },
 		{ title: 'Menu', url: prefix + 'menu', icon: Utensils },
 		{ title: 'Moments', url: prefix + 'moments', icon: Camera },
 		{ title: 'Categories', url: prefix + 'categories', icon: ChartColumnStacked },

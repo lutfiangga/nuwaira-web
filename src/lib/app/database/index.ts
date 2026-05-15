@@ -1,26 +1,21 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { env } from '$env/dynamic/private';
 import * as schema from './schema';
 
-type AppDatabase = PostgresJsDatabase<typeof schema>;
+let databaseUrl = process.env.DATABASE_URL;
 
-function createUnavailableDb(): AppDatabase {
-	return new Proxy({} as AppDatabase, {
-		get(_target, prop) {
-			throw new Error(
-				`Database is not configured. Set DATABASE_URL before using db.${String(prop)}().`
-			);
-		}
-	});
+try {
+    // Vite needs a static string to analyze the import
+    // @ts-ignore
+    const { env } = await import('$env/dynamic/private');
+    if (env.DATABASE_URL) databaseUrl = env.DATABASE_URL;
+} catch (e) {
 }
 
-const databaseUrl = env.DATABASE_URL?.trim();
+if (!databaseUrl) throw new Error('DATABASE_URL is not set');
 
-if (!databaseUrl) {
-	console.warn('[database] DATABASE_URL is not set. App will run with database disabled.');
-}
-
-const client = databaseUrl ? postgres(databaseUrl) : null;
-export const db: AppDatabase = client ? drizzle(client, { schema }) : createUnavailableDb();
+export const client = postgres(databaseUrl, {
+	prepare: false,
+	connect_timeout: 60
+});
+export const db = drizzle(client, { schema });

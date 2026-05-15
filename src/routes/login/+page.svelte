@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
+	import PasswordInput from '$lib/components/password-input.svelte';
 	import * as Card from '$lib/components/ui/card';
 
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
@@ -43,22 +44,23 @@
 						</Alert.Root>
 					{/if}
 
-					<form method="post" action="?/login" use:enhance>
+					<form method="post" action="/login" use:enhance>
+						<input type="hidden" name="intent" value="login" />
 						<div class="flex flex-col gap-6">
 							<div class="grid gap-2">
-								<Label for="login-username">Username</Label>
+								<Label for="login-username">Username atau Email</Label>
 								<Input
 									id="login-username"
 									name="username"
 									type="text"
-									placeholder="johndoe"
+									placeholder="johndoe atau john@example.com"
 									required
 								/>
 							</div>
 
 							<div class="grid gap-2">
 								<Label for="login-password">Password</Label>
-								<Input id="login-password" name="password" type="password" required />
+								<PasswordInput id="login-password" name="password" required />
 							</div>
 
 							<Button type="submit" class="w-full cursor-pointer">Login</Button>
@@ -81,7 +83,7 @@
 			<div class="space-y-4">
 				<Card.Header>
 					<Card.Title>Buat Akun Baru</Card.Title>
-					<Card.Description>Daftarkan username & password</Card.Description>
+					<Card.Description>Daftarkan username, email & password</Card.Description>
 					<Card.Action>
 						<Button variant="link" class="cursor-pointer" onclick={() => (showRegister = !showRegister)}
 							>Sudah punya akun?</Button
@@ -99,7 +101,8 @@
 							<Alert.Description>{form.message}</Alert.Description>
 						</Alert.Root>
 					{/if}
-					<form method="post" action="?/register" use:enhance>
+					<form method="post" action="/login" use:enhance>
+						<input type="hidden" name="intent" value="register" />
 						<div class="flex flex-col gap-6">
 							<div class="grid gap-2">
 								<Label for="reg-username">Username</Label>
@@ -113,8 +116,19 @@
 							</div>
 
 							<div class="grid gap-2">
+								<Label for="reg-email">Email</Label>
+								<Input
+									id="reg-email"
+									name="email"
+									type="email"
+									placeholder="johndoe@email.com"
+									required
+								/>
+							</div>
+
+							<div class="grid gap-2">
 								<Label for="reg-password">Password</Label>
-								<Input id="reg-password" name="password" type="password" required />
+								<PasswordInput id="reg-password" name="password" required />
 							</div>
 
 							<Button type="submit" class="w-full cursor-pointer">Register</Button>

@@ -11,6 +11,6 @@ export const outlet = pgTable('outlet', {
     longitude: real('longitude'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow()
-});
+}).enableRLS();
 
 export type Outlet = typeof outlet.$inferSelect;

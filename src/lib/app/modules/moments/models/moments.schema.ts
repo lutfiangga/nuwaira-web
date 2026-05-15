@@ -8,7 +8,7 @@ export const moments = pgTable('moments', {
     image: text('image').notNull(), // Single image URL
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
-});
+}).enableRLS();
 
 export type Moments = typeof moments.$inferSelect;
 export type NewMoments = typeof moments.$inferInsert;

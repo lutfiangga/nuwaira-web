@@ -5,3 +5,7 @@ export * from '../modules/outlet/models/outlet.schema';
 export * from '../modules/news/models/news.schema';
 export * from '../modules/menu/models/menu.schema';
 export * from '../modules/moments/models/moments.schema';
+export * from '../modules/student/models/student.schema';
+export * from '../modules/bootcamp-class/models/bootcamp-class.schema';
+export * from '../modules/class-material/models/class-material.schema';
+export * from '../modules/enrollment/models/enrollment.schema';
