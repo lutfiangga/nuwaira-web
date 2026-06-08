@@ -46,7 +46,10 @@ export const actions: Actions = {
 			const email = emailInput.toLowerCase();
 
 			try {
-				const existingUsername = await db.select().from(table.user).where(eq(table.user.username, username));
+				const existingUsername = await db
+					.select()
+					.from(table.user)
+					.where(eq(table.user.username, username));
 				if (existingUsername.length > 0) {
 					return fail(400, { message: 'Username already taken' });
 				}
@@ -119,12 +122,12 @@ export const actions: Actions = {
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, existingUser.id);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-			return redirect(302, '/dashboard');
 		} catch (error) {
 			console.error('Login Error:', error);
 			return fail(503, { message: 'Database is unavailable. Please try again later.' });
 		}
+
+		return redirect(302, '/dashboard');
 	}
 };
 
