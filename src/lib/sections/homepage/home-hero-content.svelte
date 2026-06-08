@@ -12,14 +12,14 @@
 		</Badge>
 
 		<h1
-			class="max-w-4xl text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-white font-raleway"
+			class="max-w-5xl text-4xl md:text-5xl lg:text-7xl font-semibold tracking-tight text-white font-raleway"
 		>
 			Kuasai Keahlian Teknologi
 			<br />
-			<span class="text-white">Bersama Nuwaira Academy</span>
+			<span>Bersama Nuwaira Academy</span>
 		</h1>
 
-		<p class="max-w-4xl text-lg text-white leading-relaxed font-plus-jakarta">
+		<p class="max-w-3xl text-base md:text-lg text-white leading-relaxed font-plus-jakarta">
 			Belajar pemrograman secara personal langsung dari praktisi industri. Gabungkan metode belajar
 			tatap muka dengan teknologi AI terbaru untuk percepatan karir digitalmu.
 		</p>
