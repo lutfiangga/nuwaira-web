@@ -1,143 +1,90 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
-	import PasswordInput from '$lib/components/password-input.svelte';
-	import * as Card from '$lib/components/ui/card';
+	import Turnstile from '$lib/components/turnstile.svelte';
 
-	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
-	import * as Alert from '$lib/components/ui/alert/index.js';
+	type LoginForm = {
+		message?: string;
+		errors?: Record<string, string[] | undefined>;
+	};
 
-	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	let { form }: { form?: LoginForm } = $props();
 
-	let { form }: { form: ActionData } = $props();
-
-	let showRegister = $state(false);
+	const errors = $derived(form?.errors ?? {});
+	let turnstileToken = $state('');
 </script>
 
-<main class="min-h-screen flex items-center justify-center p-4">
-	<Card.Root class="w-full max-w-md">
-		{#if !showRegister}
-			<div class="space-y-4">
-				<Card.Header>
-					<Card.Title>Login</Card.Title>
-					<Card.Description>Masukkan username & password Anda</Card.Description>
-					<Card.Action>
-						<Button
-							variant="link"
-							class="cursor-pointer"
-							onclick={() => (showRegister = !showRegister)}>Belum punya akun?</Button
-						>
-					</Card.Action>
-				</Card.Header>
+<svelte:head>
+	<title>Login | Nuwaira Academy</title>
+	<meta name="description" content="Masuk ke dashboard Nuwaira Academy." />
+</svelte:head>
 
-				<Card.Content>
-					{#if form?.message}
-						<Alert.Root variant="destructive" class="my-2">
-							<CircleAlertIcon class="size-4" />
-							<Alert.Title>Error</Alert.Title>
-							<Alert.Description>{form.message}</Alert.Description>
-						</Alert.Root>
-					{/if}
+<main class="grid min-h-screen bg-slate-950 px-5 py-8 text-white lg:grid-cols-[0.9fr_1.1fr]">
+	<section class="flex flex-col justify-between rounded-lg border border-white/10 bg-white/5 p-6">
+		<a href="/" class="inline-flex w-fit items-center">
+			<img src="/images/logo.svg" alt="Nuwaira Academy" class="h-9 w-auto" />
+		</a>
 
-					<form method="post" action="/login" use:enhance>
-						<input type="hidden" name="intent" value="login" />
-						<div class="flex flex-col gap-6">
-							<div class="grid gap-2">
-								<Label for="login-username">Username atau Email</Label>
-								<Input
-									id="login-username"
-									name="username"
-									type="text"
-									placeholder="johndoe atau john@example.com"
-									required
-								/>
-							</div>
+		<div class="max-w-xl py-16">
+			<p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-200">Student Access</p>
+			<h1 class="mt-4 text-4xl font-semibold leading-tight md:text-5xl">
+				Masuk dan lanjutkan proses bootcamp-mu.
+			</h1>
+			<p class="mt-5 text-base leading-7 text-white/70">
+				Gunakan email yang dipakai saat pendaftaran.
+			</p>
+		</div>
+	</section>
 
-							<div class="grid gap-2">
-								<Label for="login-password">Password</Label>
-								<PasswordInput id="login-password" name="password" required />
-							</div>
-
-							<Button type="submit" class="w-full cursor-pointer">Login</Button>
-						</div>
-					</form>
-				</Card.Content>
-
-				<Card.Footer>
-					<Button
-						variant="secondary"
-						class="w-full cursor-pointer"
-						onclick={() => (showRegister = !showRegister)}>Daftar akun</Button
-					>
-				</Card.Footer>
+	<section
+		class="w-full flex items-center justify-center gap-8 px-5 py-8 lg:grid-cols-[0.85fr_1.15fr] lg:px-8"
+	>
+		<form
+			method="post"
+			class="w-full h-full rounded-lg bg-white p-6 text-slate-950 md:p-8 items-center justify-center flex flex-col"
+		>
+			<div class="mb-6 w-full">
+				<p class="text-sm font-medium text-slate-500">Nuwaira Academy</p>
+				<h2 class="mt-1 text-2xl font-semibold">Login</h2>
 			</div>
-		{/if}
 
-		{#if showRegister}
-			<div class="space-y-4">
-				<Card.Header>
-					<Card.Title>Buat Akun Baru</Card.Title>
-					<Card.Description>Daftarkan username, email & password</Card.Description>
-					<Card.Action>
-						<Button variant="link" class="cursor-pointer" onclick={() => (showRegister = !showRegister)}
-							>Sudah punya akun?</Button
-						>
-					</Card.Action>
-				</Card.Header>
+			{#if form?.message}
+				<div class="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 w-full">
+					{form.message}
+				</div>
+			{/if}
 
-				<Card.Content>
-					{#if form?.message}
-						<Alert.Root variant="destructive" class="my-2">
-							<CircleAlertIcon class="size-4" />
-							<Alert.Title>Error</Alert.Title>
-							<Alert.Description>{form.message}</Alert.Description>
-						</Alert.Root>
-					{/if}
-					<form method="post" action="/login" use:enhance>
-						<input type="hidden" name="intent" value="register" />
-						<div class="flex flex-col gap-6">
-							<div class="grid gap-2">
-								<Label for="reg-username">Username</Label>
-								<Input
-									id="reg-username"
-									name="username"
-									type="text"
-									placeholder="johndoe"
-									required
-								/>
-							</div>
+			<div class="space-y-4 w-full">
+				<label class="grid gap-2">
+					<span class="text-sm font-medium">Email</span>
+					<Input
+						name="email"
+						required
+						type="email"
+						autocomplete="email"
+						placeholder="nama@email.com"
+					/>
+					{#if errors.email}<span class="text-sm text-red-600">{errors.email[0]}</span>{/if}
+				</label>
 
-							<div class="grid gap-2">
-								<Label for="reg-email">Email</Label>
-								<Input
-									id="reg-email"
-									name="email"
-									type="email"
-									placeholder="johndoe@email.com"
-									required
-								/>
-							</div>
-
-							<div class="grid gap-2">
-								<Label for="reg-password">Password</Label>
-								<PasswordInput id="reg-password" name="password" required />
-							</div>
-
-							<Button type="submit" class="w-full cursor-pointer">Register</Button>
-						</div>
-					</form>
-				</Card.Content>
-
-				<Card.Footer>
-					<Button
-						variant="secondary"
-						class="w-full cursor-pointer"
-						onclick={() => (showRegister = !showRegister)}>Kembali ke Login</Button
-					>
-				</Card.Footer>
+				<label class="grid gap-2">
+					<span class="text-sm font-medium">Password</span>
+					<Input name="password" required type="password" autocomplete="current-password" />
+					{#if errors.password}<span class="text-sm text-red-600">{errors.password[0]}</span>{/if}
+				</label>
 			</div>
-		{/if}
-	</Card.Root>
+
+			<div class="mt-4 flex justify-center">
+				<Turnstile bind:token={turnstileToken} />
+			</div>
+			<input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
+
+			<Button type="submit" class="mt-6 w-full rounded-md">Masuk</Button>
+
+			<p class="mt-5 text-center text-sm text-slate-500">
+				Belum terdaftar?
+				<a href="/register" class="font-medium text-blue-700 underline">Buat akun siswa</a>
+			</p>
+		</form>
+	</section>
 </main>

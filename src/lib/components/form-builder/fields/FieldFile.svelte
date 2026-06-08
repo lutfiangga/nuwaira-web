@@ -60,15 +60,68 @@
 		}
 	}
 
-	function addFiles(files: File[]) {
+	async function compressImageToWebp(file: File) {
+		if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+
+		return new Promise<File>((resolve, reject) => {
+			const image = new Image();
+			const url = URL.createObjectURL(file);
+
+			image.onload = () => {
+				const maxDimension = 960;
+				const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+				const width = Math.max(1, Math.round(image.width * scale));
+				const height = Math.max(1, Math.round(image.height * scale));
+				const canvas = document.createElement('canvas');
+				canvas.width = width;
+				canvas.height = height;
+
+				const context = canvas.getContext('2d');
+				if (!context) {
+					URL.revokeObjectURL(url);
+					reject(new Error('Canvas not available'));
+					return;
+				}
+
+				context.drawImage(image, 0, 0, width, height);
+				canvas.toBlob(
+					(blob) => {
+						URL.revokeObjectURL(url);
+						if (!blob) {
+							reject(new Error('Failed to create WebP'));
+							return;
+						}
+						const name = `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.webp`;
+						resolve(new File([blob], name, { type: 'image/webp', lastModified: Date.now() }));
+					},
+					'image/webp',
+					0.8
+				);
+			};
+
+			image.onerror = () => {
+				URL.revokeObjectURL(url);
+				reject(new Error('Invalid image'));
+			};
+
+			image.src = url;
+		});
+	}
+
+	async function addFiles(files: File[]) {
 		const validFiles: File[] = [];
-		files.forEach((file) => {
+		for (const file of files) {
 			if (config.maxSize && file.size > config.maxSize) {
 				errors = [...errors, `File ${file.name} exceeds max size of ${formatBytes(config.maxSize)}`];
-				return;
+				continue;
 			}
-			validFiles.push(file);
-		});
+			if (file.type === 'image/gif') {
+				errors = [...errors, 'GIF tidak didukung'];
+				continue;
+			}
+			const compressed = await compressImageToWebp(file);
+			validFiles.push(compressed);
+		}
 
 		if (validFiles.length === 0) return;
 
@@ -153,10 +206,10 @@
 
 	function clearSingle() {
 		if (fileInput) fileInput.value = '';
+		deletedImages = [...deletedImages, ...existingImages];
 		existingImages = [];
 		newFiles = [];
 		newFilesPreviews = [];
-		deletedImages = [];
 		value = null;
 	}
 
@@ -201,6 +254,9 @@
 		<input type="hidden" name="{config.name}_path" value={config.path} />
 	{/if}
 	<input type="hidden" name="{config.name}_multiple" value={config.multiple ? 'true' : 'false'} />
+	{#if !config.multiple && existingImages.length === 0 && newFiles.length === 0 && value}
+		<input type="hidden" name="{config.name}_removed" value="true" />
+	{/if}
 	{#each existingImages as img}
 		<input type="hidden" name="{config.name}_existing" value={img} />
 	{/each}

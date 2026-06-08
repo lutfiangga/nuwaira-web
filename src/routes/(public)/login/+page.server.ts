@@ -1,16 +1,41 @@
-import { hash, verify } from '@node-rs/argon2';
-import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
-import { eq, or } from 'drizzle-orm';
-import * as auth from '$lib/app/server/auth';
-import { db } from '$lib/app/database';
-import * as table from '$lib/app/database/schema';
-import { RbacService } from '$lib/app/modules/rbac/services/rbac.service';
 import type { Actions, PageServerLoad } from './$types';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { db } from '$lib/app/database';
+import { user } from '$lib/app/database/schema';
+import * as auth from '$lib/app/server/auth';
+import { verifyPassword } from '$lib/app/server/auth';
+import { verifyTurnstileToken } from '$lib/app/server/turnstile';
+
+const LoginEmailSchema = z.preprocess(
+	(value) => (typeof value === 'string' ? value : ''),
+	z
+		.string()
+		.trim()
+		.min(1, 'Email wajib diisi')
+		.email('Email tidak valid')
+		.transform((value) => value.toLowerCase())
+);
+
+const LoginPasswordSchema = z.preprocess(
+	(value) => (typeof value === 'string' ? value : ''),
+	z.string().min(1, 'Password wajib diisi')
+);
+
+const LoginSchema = z.object({
+	email: LoginEmailSchema,
+	password: LoginPasswordSchema,
+	cfTurnstileResponse: z.string().optional()
+});
+
+function getRedirectPath(role: string) {
+	return role === 'admin' || role === 'student' ? '/dashboard' : '/';
+}
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/dashboard');
+		redirect(302, getRedirectPath(event.locals.user.role));
 	}
 
 	return {};
@@ -19,145 +44,52 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	default: async (event) => {
 		const formData = await event.request.formData();
-		const intent = formData.get('intent');
-		const passwordInput = formData.get('password');
+		const result = LoginSchema.safeParse({
+			email: formData.get('email'),
+			password: formData.get('password'),
+			cfTurnstileResponse: formData.get('cf-turnstile-response')
+		});
 
-		if (!validatePassword(passwordInput)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
-		}
-
-		const password = passwordInput;
-
-		if (intent === 'register') {
-			const usernameInput = formData.get('username');
-			const emailInput = formData.get('email');
-
-			if (!validateUsername(usernameInput)) {
-				return fail(400, {
-					message: 'Invalid username (min 3, max 31 characters, alphanumeric only)'
-				});
-			}
-
-			if (!validateEmail(emailInput)) {
-				return fail(400, { message: 'Invalid email address' });
-			}
-
-			const username = usernameInput;
-			const email = emailInput.toLowerCase();
-
-			try {
-				const existingUsername = await db
-					.select()
-					.from(table.user)
-					.where(eq(table.user.username, username));
-				if (existingUsername.length > 0) {
-					return fail(400, { message: 'Username already taken' });
-				}
-
-				const existingEmail = await db.select().from(table.user).where(eq(table.user.email, email));
-				if (existingEmail.length > 0) {
-					return fail(400, { message: 'Email already registered' });
-				}
-
-				const userId = generateUserId();
-				const roleId = await RbacService.getDefaultRegisterRoleId();
-				const passwordHash = await hash(password, {
-					memoryCost: 19456,
-					timeCost: 2,
-					outputLen: 32,
-					parallelism: 1
-				});
-
-				await db.insert(table.user).values({
-					id: userId,
-					username,
-					email,
-					roleId,
-					passwordHash
-				});
-
-				const sessionToken = auth.generateSessionToken();
-				const session = await auth.createSession(sessionToken, userId);
-				auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-			} catch (error) {
-				console.error('Register Error:', error);
-				return fail(503, { message: 'Database is unavailable. Please try again later.' });
-			}
-
-			return redirect(302, '/dashboard');
-		}
-
-		const loginIdentifierInput = formData.get('username');
-		if (!validateLoginIdentifier(loginIdentifierInput)) {
-			return fail(400, { message: 'Username atau email wajib diisi' });
-		}
-
-		const loginIdentifier = loginIdentifierInput.trim();
-		const loginIdentifierLower = loginIdentifier.toLowerCase();
-
-		try {
-			const results = await db
-				.select()
-				.from(table.user)
-				.where(
-					or(eq(table.user.username, loginIdentifier), eq(table.user.email, loginIdentifierLower))
-				);
-
-			const existingUser = results.at(0);
-			if (!existingUser) {
-				return fail(400, { message: 'Incorrect username or password' });
-			}
-
-			const validPassword = await verify(existingUser.passwordHash, password, {
-				memoryCost: 19456,
-				timeCost: 2,
-				outputLen: 32,
-				parallelism: 1
+		if (!result.success) {
+			return fail(400, {
+				message: 'Form belum terisi',
+				errors: result.error.flatten().fieldErrors
 			});
-
-			if (!validPassword) {
-				return fail(400, { message: 'Incorrect username or password' });
-			}
-
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, existingUser.id);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch (error) {
-			console.error('Login Error:', error);
-			return fail(503, { message: 'Database is unavailable. Please try again later.' });
 		}
 
-		return redirect(302, '/dashboard');
+		const turnstileValid = await verifyTurnstileToken(result.data.cfTurnstileResponse || '');
+		if (!turnstileValid) {
+			return fail(400, {
+				message: 'Verifikasi CAPTCHA gagal. Silakan coba lagi.',
+				errors: {}
+			});
+		}
+
+		const [account] = await db
+			.select()
+			.from(user)
+			.where(eq(user.email, result.data.email))
+			.limit(1);
+
+		if (!account) {
+			return fail(400, {
+				message: 'Email atau password salah',
+				errors: {}
+			});
+		}
+
+		const validPassword = await verifyPassword(account.passwordHash, result.data.password);
+		if (!validPassword) {
+			return fail(400, {
+				message: 'Email atau password salah',
+				errors: {}
+			});
+		}
+
+		const sessionToken = auth.generateSessionToken();
+		const session = await auth.createSession(sessionToken, account.id);
+		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+		redirect(303, getRedirectPath(account.role));
 	}
 };
-
-function generateUserId() {
-	const bytes = crypto.getRandomValues(new Uint8Array(15));
-	return encodeBase32LowerCase(bytes);
-}
-
-function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
-	);
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
-}
-
-function validateEmail(email: unknown): email is string {
-	return (
-		typeof email === 'string' &&
-		email.length > 3 &&
-		email.length <= 254 &&
-		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-	);
-}
-
-function validateLoginIdentifier(value: unknown): value is string {
-	return typeof value === 'string' && value.trim().length > 0;
-}

@@ -55,6 +55,8 @@ export async function createSession(token: string, userId: string) {
 		userId,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
 	};
+
+	await db.delete(table.session).where(eq(table.session.userId, userId));
 	await db.insert(table.session).values(session);
 	return session;
 }
@@ -71,7 +73,13 @@ export async function validateSessionToken(token: string) {
 		const [result] = await db
 			.select({
 				// Sesuaikan kolom user yang ingin dikembalikan
-				user: { id: table.user.id, username: table.user.username, roleId: table.user.roleId },
+				user: {
+					id: table.user.id,
+					role: table.user.role,
+					email: table.user.email,
+					name: table.user.name,
+					photo: table.user.photo
+				},
 				session: table.session
 			})
 			.from(table.session)
@@ -118,13 +126,24 @@ export async function invalidateSession(sessionId: string) {
 	}
 }
 
+export async function invalidateUserSessions(userId: string) {
+	try {
+		await db.delete(table.session).where(eq(table.session.userId, userId));
+	} catch (error) {
+		logDbError('auth.invalidateUserSessions', error);
+	}
+}
+
 /**
  * Mengatur cookie sesi pada browser.
  */
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: import.meta.env.PROD
 	});
 }
 
@@ -133,6 +152,9 @@ export function setSessionTokenCookie(event: RequestEvent, token: string, expire
  */
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: import.meta.env.PROD
 	});
 }

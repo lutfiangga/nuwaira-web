@@ -1,6 +1,11 @@
 import type { FormSchema, SelectOption } from '$lib/types/form-builder';
 
-export function getCreateUserSchema(roleOptions: SelectOption[]): FormSchema {
+export const USER_ROLE_OPTIONS: SelectOption[] = [
+	{ value: 'admin', label: 'Admin' },
+	{ value: 'student', label: 'Student' }
+];
+
+export function getCreateUserSchema(roleOptions: SelectOption[] = USER_ROLE_OPTIONS): FormSchema {
 	return [
 		{
 			type: 'grid',
@@ -11,21 +16,24 @@ export function getCreateUserSchema(roleOptions: SelectOption[]): FormSchema {
 					label: 'Photo',
 					type: 'file',
 					accept: 'image/*',
-					path: 'uploads/users',
 					maxSize: 1024 * 1024 * 5,
 					multiple: false
 				},
-				{ name: 'username', label: 'Username', type: 'text', required: true },
-				{ name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'name@example.com' },
-				{ name: 'roleId', label: 'Role', type: 'select', required: true, options: roleOptions },
-				{ name: 'age', label: 'Age', type: 'number' },
+				{
+					name: 'email',
+					label: 'Email',
+					type: 'email',
+					required: true,
+					placeholder: 'name@example.com'
+				},
+				{ name: 'role', label: 'Role', type: 'select', required: true, options: roleOptions },
 				{ name: 'password', label: 'Password', type: 'password', required: true }
 			]
 		}
 	];
 }
 
-export function getEditUserSchema(roleOptions: SelectOption[]): FormSchema {
+export function getEditUserSchema(roleOptions: SelectOption[] = USER_ROLE_OPTIONS): FormSchema {
 	return [
 		{
 			type: 'grid',
@@ -36,14 +44,17 @@ export function getEditUserSchema(roleOptions: SelectOption[]): FormSchema {
 					label: 'Photo',
 					type: 'file',
 					accept: 'image/*',
-					path: 'uploads/users',
 					maxSize: 1024 * 1024 * 5,
 					multiple: false
 				},
-				{ name: 'username', label: 'Username', type: 'text', required: true },
-				{ name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'name@example.com' },
-				{ name: 'roleId', label: 'Role', type: 'select', required: true, options: roleOptions },
-				{ name: 'age', label: 'Age', type: 'number' },
+				{
+					name: 'email',
+					label: 'Email',
+					type: 'email',
+					required: true,
+					placeholder: 'name@example.com'
+				},
+				{ name: 'role', label: 'Role', type: 'select', required: true, options: roleOptions },
 				{
 					name: 'password',
 					label: 'Password',

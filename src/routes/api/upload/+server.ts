@@ -1,40 +1,23 @@
-
 import { json } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { uploadCloudinaryImage } from '$lib/app/server/cloudinary';
 
-export const POST: RequestHandler = async ({ request }) => {
-    try {
-        const formData = await request.formData();
-        const file = formData.get('file') as File;
+export async function POST({ request }) {
+	try {
+		const formData = await request.formData();
+		const file = formData.get('file');
 
-        if (!file || !(file instanceof File)) {
-            return json({ error: 'No file uploaded' }, { status: 400 });
-        }
+		if (!file || !(file instanceof File) || file.size === 0) {
+			return json({ error: 'Tidak ada file yang diupload' }, { status: 400 });
+		}
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const ext = path.extname(file.name);
-        const fileName = `${randomUUID()}${ext}`;
-        const uploadDir = 'static/uploads/news';
-        
-        // Ensure directory exists
-        await fs.mkdir(uploadDir, { recursive: true });
-        
-        const filePath = path.join(uploadDir, fileName);
-        await fs.writeFile(filePath, buffer);
+		const result = await uploadCloudinaryImage(file, 'editor-uploads');
 
-        // Return path relative to static (for public access)
-        // Usually static files are served at root, so '/uploads/news/filename'
-        const publicUrl = `/uploads/news/${fileName}`;
-
-        console.log(`File uploaded: ${publicUrl}`);
-
-        return json({ url: publicUrl });
-
-    } catch (err) {
-        console.error('Upload error:', err);
-        return json({ error: 'Upload failed' }, { status: 500 });
-    }
-};
+		return json({ url: result.url });
+	} catch (error) {
+		console.error('Upload error:', error);
+		return json(
+			{ error: error instanceof Error ? error.message : 'Gagal mengupload gambar' },
+			{ status: 500 }
+		);
+	}
+}

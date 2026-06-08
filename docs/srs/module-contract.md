@@ -1,32 +1,54 @@
 # Module Contract
 
-## Domain Module Structure
-Setiap modul domain wajib punya:
-- `models/`: schema tabel modul.
-- `services/`: business logic modul.
-- `requests/`: validation schema DTO.
-- `forms/`: schema form builder.
-- `schema.ts`: entry export tunggal untuk agregasi database schema.
+## Active Modules
 
-## RBAC Registry Contract
-Setiap modul panel wajib terdaftar di RBAC DB:
-- `panel_module`:
-  - `module_key` unik
-  - `title`, `url`, `icon`
-  - `sort_order`, `is_visible`, `is_active`
-  - `menu_permission_code` (opsional)
-- `route_permission`:
-  - `route_key` (contoh: `users`)
-  - `operation_key` (contoh: `view/create/update/delete`)
-  - `permission_code`
+Scope aktif hanya:
 
-## Route Guard Contract
-Setiap route panel wajib:
-- `load`: pakai guard route operation `view`.
-- `actions`: dibungkus guard operation CRUD sesuai action name.
-- tidak boleh cek role pakai string hardcode.
+- user
+- auth/session
+- cloudinary upload
+- public register/login/logout
+- shared dashboard
+- admin users
 
-## User Role Contract
-- User tetap menyimpan `role_id` aktif.
-- `role_id` harus valid FK ke tabel role.
-- Default role register wajib baca dari `app_setting.default_register_role`.
+## User Schema Contract
+
+Tabel `user` menyimpan:
+
+- `id`
+- `email`
+- `role`
+- `name`
+- `phone`
+- `education`
+- `motivation`
+- `student_type`
+- `company_name`
+- `photo`
+- `password_hash`
+
+## Route Contract
+
+- Public routes:
+  - `/`
+  - `/register`
+  - `/login`
+  - `/logout`
+- Shared routes:
+  - `/dashboard`
+- Admin routes:
+  - `/users`
+
+## Service Contract
+
+- `auth.ts` menangani password hash, session token, cookie, session cleanup.
+- `cloudinary.ts` menangani signed upload ke Cloudinary.
+- `UserService` menangani CRUD user dan upload photo user ke Cloudinary.
+
+## Upload Folder Contract
+
+- Register student photo default folder: `bootcamp-students`.
+- Admin/user photo folder: `users`.
+- Final folder selalu memakai prefix:
+  - `${CLOUDINARY_FOLDER_PREFIX}/bootcamp-students`
+  - `${CLOUDINARY_FOLDER_PREFIX}/users`

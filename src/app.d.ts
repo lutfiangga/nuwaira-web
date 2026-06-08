@@ -1,23 +1,29 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
 declare global {
 	namespace App {
 		interface Locals {
 			user: {
 				id: string;
-				username: string;
-				roleId: string;
+				role: string;
 				email?: string | null;
 				name?: string | null;
 				photo?: string | null;
-				age?: number | null;
+				phone?: string | null;
+				education?: string | null;
+				motivation?: string | null;
+				studentType?: string | null;
+				companyName?: string | null;
 			} | null;
 			session: import('$lib/app/modules/user/models/user.schema').Session | null;
 		}
-	} // interface Error {}
-	// interface Locals {}
-} // interface PageData {}
-// interface PageState {}
+	}
 
-// interface Platform {}
-export { };
+	interface Window {
+		turnstile?: {
+			render: (container: HTMLElement, options: Record<string, unknown>) => string;
+			remove: (widgetId: string) => void;
+			reset: (widgetId?: string) => void;
+		};
+	}
+}
+
+export {};

@@ -1,51 +1,56 @@
-# PRD - Dynamic LMS Platform
+# PRD - Nuwaira Academy Bootcamp Intake
 
 ## Vision
-Membangun LMS siap pakai dengan governance penuh dari panel admin: role, permission, menu, route access, dan CRUD module dikontrol data (DB), bukan hardcode.
+
+Menyediakan funnel pendaftaran bootcamp yang ringan, jelas, dan siap dipakai untuk calon siswa personal maupun business, dengan panel admin untuk memantau pendaftar.
 
 ## Product Objectives
-- Menyediakan fondasi LMS multi-role yang bisa diubah tanpa redeploy.
-- Menjadikan superadmin sebagai bootstrap governance owner.
-- Memastikan onboarding modul baru cukup lewat registry + schema contract.
-- Menurunkan biaya maintenance lewat arsitektur config-driven.
+
+- Calon siswa bisa daftar akun bootcamp dari landing page.
+- Siswa langsung masuk ke dashboard setelah register.
+- Admin bisa login dan melihat ringkasan intake.
+- Admin bisa mengelola user dasar.
+- Foto profil disimpan di Cloudinary.
+- Runtime development menggunakan Bun.
 
 ## Primary Users
-- Superadmin: mendefinisikan role, permission, route access, menu, default register role.
-- Operator (role custom): mengelola data operasional LMS sesuai permission.
-- Instructor (role custom): mengelola materi/kelas jika diberi akses.
-- Learner/student: tidak wajib ada sebagai role tetap, tergantung konfigurasi superadmin.
 
-## In Scope (Current Release)
-- Dynamic RBAC registry:
-  - Role CRUD.
-  - Permission CRUD.
-  - Role-permission assignment.
-  - Panel module/menu registry CRUD.
-  - Route-permission mapping CRUD.
-  - Default register role setting.
-- LMS Core CRUD modules:
-  - Users
-  - Students
-  - Classes
-  - Materials
-  - Enrollments
-- Route group architecture:
-  - `src/routes/(public)`
-  - `src/routes/(panel)`
+- Visitor: melihat landing page dan masuk ke form pendaftaran.
+- Student personal: mendaftar untuk kebutuhan individu.
+- Student business: mendaftar untuk kebutuhan perusahaan/tim dan wajib mengisi company name.
+- Admin: melihat dashboard operasional dan mengelola users.
 
-## Out of Scope (Current Release)
-- Payment gateway production integration.
-- Assessment engine kompleks (adaptive test).
-- Multi-tenant isolasi data lintas organisasi.
+## In Scope
 
-## Product Rules
-- Tidak boleh ada daftar role tetap di code.
-- Tidak boleh ada daftar menu panel tetap di code.
-- Tidak boleh ada permission matrix tetap di code.
-- Route access harus resolve ke permission via tabel mapping.
+- Landing page.
+- Register bootcamp dua step.
+- Login email/password.
+- Logout.
+- Dashboard shared `/dashboard`.
+- Admin users page.
+- Cloudinary upload untuk foto.
+- Session cleanup.
+- Seeder admin.
+
+## Out of Scope
+
+- Role permission CRUD.
+- Panel module registry.
+- Route permission registry.
+- LMS class/material/enrollment workflow.
+- Payment.
+- Attendance.
+- Certificate.
 
 ## Success Criteria
-- Superadmin bisa menambah role baru dan langsung pakai tanpa ubah code.
-- Superadmin bisa mematikan menu modul via panel dan langsung berdampak ke sidebar.
-- Superadmin bisa memetakan route ke permission dari panel.
-- Register user baru mengikuti default role dari setting aktif.
+
+- Register tanpa foto tetap berhasil.
+- Register dengan foto menyimpan URL Cloudinary.
+- Jalur business wajib mengisi company name.
+- Pendidikan `Lainnya` menyimpan value custom.
+- Admin dan student diarahkan ke `/dashboard` dengan tampilan sesuai role.
+
+## Related Documents
+
+- [Implementation Status](implementation-status.md)
+- [Roadmap](roadmap.md)

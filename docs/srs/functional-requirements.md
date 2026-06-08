@@ -1,62 +1,72 @@
 # Functional Requirements
 
-## FR-001 Bootstrap Role
-- Sistem harus membuat role awal `superadmin` sebagai bootstrap.
-- Role lain tidak wajib ada di seed.
+## FR-001 Landing Page
 
-## FR-002 Role Management
-- Superadmin harus bisa:
-  - create role
-  - update role
-  - delete role (kecuali bootstrap superadmin)
-  - assign permission ke role
+- Visitor dapat membuka landing page.
+- CTA pendaftaran mengarah ke `/register`.
 
-## FR-003 Permission Management
-- Superadmin harus bisa:
-  - create permission code baru
-  - update metadata permission
-  - delete permission
-- Permission code harus unik.
+## FR-002 Register Bootcamp
 
-## FR-004 Panel Module Registry
-- Superadmin harus bisa kelola daftar menu panel via DB:
-  - module key
-  - title
-  - url
-  - icon
-  - sort order
-  - visibility aktif/nonaktif
-  - permission untuk lihat menu
+- Form register terdiri dari dua step.
+- Step 1 wajib berisi:
+  - nama
+  - student type: personal atau business
+  - pendidikan
+  - motivasi
+  - no HP
+- Step 2 wajib berisi:
+  - email
+  - password
+  - konfirmasi password
+- Foto profil opsional.
+- Jika pendidikan `Lainnya`, sistem wajib menampilkan input custom.
+- Jika student type `business`, company name wajib diisi.
+- Jika student type `personal`, company name tidak wajib dan tidak disimpan.
 
-## FR-005 Route Permission Mapping
-- Superadmin harus bisa kelola mapping route ke permission via DB:
-  - route key
-  - operation key (`view/create/update/delete/...`)
-  - optional route path/method metadata
-  - permission code yang wajib dimiliki
-- Semua route panel harus melewati resolver mapping ini.
+## FR-003 Register Validation
 
-## FR-006 Authorization Runtime
-- Saat request route panel:
-  - sistem resolve mapping route+operation -> permission code
-  - sistem cek role user punya permission code
-  - jika tidak punya, return `403`
+- Frontend harus menampilkan alert di atas form jika submit/next dilakukan saat data belum lengkap.
+- Setiap field harus punya pesan error yang spesifik.
+- Error tidak boleh memakai pesan mentah seperti `Invalid input: expected string, received null`.
+- Value form tidak boleh hilang ketika user pindah step.
 
-## FR-007 Default Register Role
-- Superadmin harus bisa set role default untuk user register baru.
-- Register flow harus selalu baca nilai setting aktif.
+## FR-004 Photo Upload
 
-## FR-008 Dynamic Menu Rendering
-- Sidebar panel harus mengambil menu dari registry DB.
-- Menu tampil hanya jika:
-  - module aktif
-  - module visible
-  - user punya permission menu (kecuali superadmin bypass)
+- Foto register dikompres dan dikonversi ke WebP di browser sebelum submit.
+- Server hanya upload foto jika file tersedia.
+- Foto user/admin upload harus disimpan di Cloudinary.
+- Database menyimpan URL Cloudinary di kolom `user.photo`.
+- Local upload directory tidak boleh dipakai untuk flow aktif.
 
-## FR-009 Domain Coverage (Current)
-- Modul operasional inti yang aktif:
-  - users
-  - students
-  - classes
-  - materials
-  - enrollments
+## FR-005 Login
+
+- Login memakai email dan password.
+- Username tidak dipakai.
+- Admin dan student diarahkan ke `/dashboard`.
+- Tampilan dashboard mengikuti role user.
+
+## FR-006 Session Management
+
+- Login baru harus menghapus session lama user yang sama.
+- Logout harus menghapus session user dari tabel `session`.
+- Session expired harus dibersihkan saat validasi token.
+
+## FR-007 Admin Panel
+
+- Admin dapat membuka dashboard operasional.
+- Admin dapat membuka halaman `/users`.
+- Admin dapat membuat, mengubah, dan menghapus user dasar.
+- Admin panel memakai sidebar.
+
+## FR-008 Student Panel
+
+- Student dapat membuka dashboard profil pendaftaran.
+- Student panel memakai sidebar.
+
+## FR-009 Seed
+
+- Seeder hanya membuat admin awal.
+- Seed default:
+  - email: `admin@nuwaira.id`
+  - password: `password`
+  - role: `admin`

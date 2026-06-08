@@ -1,62 +1,34 @@
-# UML - Domain Class Dynamic LMS
+# UML - Domain Class
 
 ```mermaid
 classDiagram
   class User {
     +id: text
-    +username: text
     +email: text
-    +roleId: text
+    +role: text
+    +name: text?
+    +phone: text?
+    +education: text?
+    +motivation: text?
+    +studentType: text
+    +companyName: text?
+    +photo: text?
+    +passwordHash: text
   }
 
-  class Role {
+  class Session {
     +id: text
-    +name: text
-    +isSystem: boolean
+    +userId: text
+    +expiresAt: timestamp
   }
 
-  class Permission {
-    +code: text
-    +resource: text
-    +action: text
-    +label: text
+  class CloudinaryUpload {
+    +folderPrefix: text
+    +folder: text
+    +secureUrl: text
+    +publicId: text?
   }
 
-  class RolePermission {
-    +roleId: text
-    +permissionCode: text
-  }
-
-  class PanelModule {
-    +id: text
-    +moduleKey: text
-    +title: text
-    +url: text
-    +icon: text
-    +menuPermissionCode: text?
-    +sortOrder: int
-    +isVisible: boolean
-    +isActive: boolean
-  }
-
-  class RoutePermission {
-    +id: text
-    +routeKey: text
-    +operationKey: text
-    +routePath: text?
-    +method: text?
-    +permissionCode: text
-    +isActive: boolean
-  }
-
-  class AppSetting {
-    +key: text
-    +value: text
-  }
-
-  User --> Role : role_id
-  Role "1" --> "*" RolePermission
-  Permission "1" --> "*" RolePermission
-  Permission "1" --> "*" PanelModule : menu_permission_code
-  Permission "1" --> "*" RoutePermission : permission_code
+  User "1" --> "*" Session : user_id
+  User --> CloudinaryUpload : photo url
 ```

@@ -1,26 +1,42 @@
 # Non Functional Requirements
 
 ## Maintainability
-- Setiap modul wajib punya `schema.ts` sebagai entry export.
-- Policy guard tidak boleh duplikasi hardcode permission.
-- RBAC harus config/data-driven agar role/permission/menu/route bisa berubah tanpa edit code.
+
+- Runtime command harus konsisten memakai Bun.
+- Route group harus jelas berdasarkan audience:
+  - public
+  - shared
+  - admin
+- Dashboard shared tidak boleh diduplikasi untuk admin dan student.
+- Docs harus diperbarui ketika scope berubah.
 
 ## Reliability
-- Semua operasi RBAC CRUD harus validasi input (schema validation).
-- Semua relasi RBAC wajib pakai FK + unique constraint.
-- Delete data RBAC harus menjaga integritas referensi.
+
+- Register dan login harus tetap menampilkan pesan validasi ramah saat input kosong/null.
+- Session cleanup harus mencegah tabel `session` membengkak.
+- Upload foto opsional tidak boleh menggagalkan register.
 
 ## Security
-- Semua route panel wajib:
-  - authenticated
-  - authorized via route-permission resolver
-- Password wajib hash Argon2.
-- Role `superadmin` tidak boleh hilang dari sistem.
+
+- Password wajib di-hash dengan Argon2.
+- Cloudinary API secret hanya dibaca dari env private.
+- Admin route wajib mengecek `role === 'admin'`.
+- Student dashboard wajib butuh login.
+- Cookie session harus memakai path `/`.
+
+## Storage
+
+- Foto tidak boleh disimpan ke local server pada flow aktif.
+- Database hanya menyimpan URL foto.
+- Folder Cloudinary harus memakai prefix per environment.
 
 ## Performance
-- Data menu dan access profile harus bisa dibaca cepat (query terindeks).
-- Daftar RBAC settings harus efisien untuk panel admin (batched query).
 
-## Scalability
-- Penambahan modul baru tidak boleh butuh perubahan auth core.
-- Penambahan route baru cukup tambah registry mapping + permission.
+- Dashboard admin hanya mengambil ringkasan dan daftar siswa terbatas.
+- Tabel users memakai pagination.
+
+## Accessibility
+
+- Form field harus punya label.
+- Password field harus punya toggle show/hide dengan label aksesibel.
+- Alert validasi harus muncul dekat bagian atas form.

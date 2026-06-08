@@ -5,20 +5,21 @@
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 
-	const brandColor = $derived(data?.brand?.brandColor || '#092A77');
-	const brandName = $derived(data?.brand?.brandName || 'Nuwaira Academy');
-	const brandFavicon = $derived(data?.brand?.brandFavicon || '/images/logo-icon.svg');
+	const brandColor = '#092A77';
+	const brandFavicon = '/images/logo-icon.svg';
 </script>
 
 <svelte:head>
 	<Seo
-		title={data?.brand?.seoTitle || undefined}
-		description={data?.brand?.seoDescription || undefined}
-		image={data?.brand?.seoOgImage || '/images/meta.png'}
+		title="Nuwaira Academy"
+		description="Leading Education & Training Provider for Students & Professionals"
+		image="/images/meta.png"
 	/>
 	<link rel="icon" href={brandFavicon} type="image/svg+xml" />
 </svelte:head>
 
-<main style="--brand-blue: {brandColor}; --primary: {brandColor}; --ring: {brandColor}; --sidebar-primary: {brandColor}">
+<main
+	style="--brand-blue: {brandColor}; --primary: {brandColor}; --ring: {brandColor}; --sidebar-primary: {brandColor}"
+>
 	{@render children?.()}
 </main>

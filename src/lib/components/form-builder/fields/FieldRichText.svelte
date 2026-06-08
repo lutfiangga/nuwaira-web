@@ -82,6 +82,56 @@
         };
     });
 
+    function compressImageToWebp(file: File): Promise<File> {
+        if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+            return Promise.resolve(file);
+        }
+
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            const url = URL.createObjectURL(file);
+
+            image.onload = () => {
+                const maxDimension = 960;
+                const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+                const width = Math.max(1, Math.round(image.width * scale));
+                const height = Math.max(1, Math.round(image.height * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('Canvas not available'));
+                    return;
+                }
+
+                context.drawImage(image, 0, 0, width, height);
+                canvas.toBlob(
+                    (blob) => {
+                        URL.revokeObjectURL(url);
+                        if (!blob) {
+                            reject(new Error('Failed to create WebP'));
+                            return;
+                        }
+                        const name = `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.webp`;
+                        resolve(new File([blob], name, { type: 'image/webp', lastModified: Date.now() }));
+                    },
+                    'image/webp',
+                    0.8
+                );
+            };
+
+            image.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('Invalid image'));
+            };
+
+            image.src = url;
+        });
+    }
+
     async function imageHandler() {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
@@ -92,8 +142,15 @@
             const file = input.files?.[0];
             if (!file) return;
 
+            if (file.type === 'image/gif') {
+                alert('GIF tidak didukung');
+                return;
+            }
+
+            const compressed = await compressImageToWebp(file);
+
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', compressed);
 
             try {
                 const res = await fetch('/api/upload', {

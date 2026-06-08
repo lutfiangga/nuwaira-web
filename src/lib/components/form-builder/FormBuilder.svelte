@@ -41,6 +41,21 @@
 		onerror?: (message: string) => void;
 	} = $props();
 
+	const FIELD_COMPONENTS: Record<string, any> = {
+		text: FieldText,
+		email: FieldText,
+		password: FieldText,
+		number: FieldText,
+		textarea: FieldTextarea,
+		select: FieldSelect,
+		combobox: FieldCombobox,
+		checkbox: FieldCheckbox,
+		switch: FieldCheckbox,
+		file: FieldFile,
+		'rich-text': FieldRichText,
+		color: FieldColor
+	};
+
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 
@@ -137,26 +152,12 @@
 		<Grid config={item} {renderItem} />
 	{:else if item.type === 'group'}
 		<Group config={item} {renderItem} />
-	{:else if item.type === 'text' || item.type === 'email' || item.type === 'password' || item.type === 'number'}
-		<FieldText config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'textarea'}
-		<FieldTextarea config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'select'}
-		<FieldSelect config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'combobox'}
-		<FieldCombobox config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'checkbox' || item.type === 'switch'}
-		<FieldCheckbox config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'file'}
-		<FieldFile config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'rich-text'}
-		<FieldRichText config={item} bind:value={data[item.name]} />
-	{:else if item.type === 'color'}
-		<FieldColor config={item} bind:value={data[item.name]} />
 	{:else if item.type === 'custom'}
-		{#if item.component === 'LocationSearch'}
-			<LocationSearch bind:latitude={data.latitude} bind:longitude={data.longitude} />
-		{/if}
+		<LocationSearch bind:latitude={data.latitude} bind:longitude={data.longitude} />
+	{:else}
+		{#each [FIELD_COMPONENTS[item.type]] as Comp}
+			<Comp config={item} bind:value={data[item.name]} />
+		{/each}
 	{/if}
 {/snippet}
 

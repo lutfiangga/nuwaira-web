@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import { page } from '$app/stores';
-	import { Bot, Sparkles } from '@lucide/svelte';
 	import PrimaryLogo from './icons/primary-logo.svelte';
 
 	interface RouteItem {
@@ -10,7 +9,9 @@
 		icon: any;
 	}
 
-	let { routes = [] }: { routes?: RouteItem[] } = $props();
+	let {
+		routes = [],
+	}: { routes?: RouteItem[]; } = $props();
 
 	const normalizeRoute = (url: string) =>
 		url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
@@ -21,18 +22,14 @@
 		return current === target || current.startsWith(`${target}/`);
 	};
 
-	const brandLogo = $derived($page.data?.brand?.brandLogo);
-	const brandName = $derived($page.data?.brand?.brandName || 'Nuwaira Academy');
+	const brandName = 'Nuwaira Academy';
 </script>
 
 <Sidebar.Root variant="sidebar" class="border-0 bg-transparent">
 	<Sidebar.Header class="px-5 pb-4 pt-6">
-		<a href="/dashboard" class="flex items-center gap-3 text-primary justify-center group">
-			{#if brandLogo}
-				<img src={brandLogo} alt={brandName} class="h-8 w-auto group-hover:scale-105 transition-transform" />
-			{:else}
-				<PrimaryLogo className="h-8 w-auto group-hover:scale-105 transition-transform" />
-			{/if}
+		<a href="/dashboard" class="group flex items-center justify-center gap-3 text-primary">
+			<PrimaryLogo className="h-8 w-auto transition-transform group-hover:scale-105" />
+			<span class="sr-only">{brandName}</span>
 		</a>
 	</Sidebar.Header>
 
@@ -61,17 +58,4 @@
 		</Sidebar.Group>
 	</Sidebar.Content>
 
-	<Sidebar.Footer class="p-3">
-		<div class="rounded-2xl bg-linear-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-4">
-			<div class="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">
-				<Sparkles class="h-3 w-3" />
-				AI Powered
-			</div>
-			<p class="mt-2 text-sm font-medium">Copilot siap bantu workflow panel.</p>
-			<a href="/dashboard" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-				<Bot class="h-4 w-4" />
-				Open Assistant
-			</a>
-		</div>
-	</Sidebar.Footer>
 </Sidebar.Root>

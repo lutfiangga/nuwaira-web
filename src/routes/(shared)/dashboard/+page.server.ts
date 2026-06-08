@@ -1,0 +1,86 @@
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { asc, eq, sql } from 'drizzle-orm';
+import { db } from '$lib/app/database';
+import { user } from '$lib/app/database/schema';
+
+export const load: PageServerLoad = async (event) => {
+	if (!event.locals.user) {
+		redirect(302, '/login');
+	}
+
+	const [account] = await db
+		.select({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			role: user.role,
+			phone: user.phone,
+			education: user.education,
+			motivation: user.motivation,
+			studentType: user.studentType,
+			companyName: user.companyName,
+			photo: user.photo
+		})
+		.from(user)
+		.where(eq(user.id, event.locals.user.id))
+		.limit(1);
+
+	if (!account) {
+		redirect(302, '/login');
+	}
+
+	if (account.role === 'admin') {
+		const [summary] = await db
+			.select({
+				totalUsers: sql<number>`count(*)`,
+				totalStudents: sql<number>`count(*) filter (where ${user.role} = 'student')`,
+				totalAdmins: sql<number>`count(*) filter (where ${user.role} = 'admin')`,
+				totalPersonal: sql<number>`count(*) filter (where ${user.role} = 'student' and ${user.studentType} = 'personal')`,
+				totalBusiness: sql<number>`count(*) filter (where ${user.role} = 'student' and ${user.studentType} = 'business')`
+			})
+			.from(user);
+
+		const students = await db
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				phone: user.phone,
+				education: user.education,
+				studentType: user.studentType,
+				companyName: user.companyName
+			})
+			.from(user)
+			.where(eq(user.role, 'student'))
+			.orderBy(asc(user.name), asc(user.email))
+			.limit(8);
+
+		return {
+			view: 'admin' as const,
+			account,
+			admin: {
+				summary: {
+					totalUsers: Number(summary?.totalUsers ?? 0),
+					totalStudents: Number(summary?.totalStudents ?? 0),
+					totalAdmins: Number(summary?.totalAdmins ?? 0),
+					totalPersonal: Number(summary?.totalPersonal ?? 0),
+					totalBusiness: Number(summary?.totalBusiness ?? 0)
+				},
+				students
+			},
+			student: null
+		};
+	}
+
+	if (account.role !== 'student') {
+		redirect(302, '/');
+	}
+
+	return {
+		view: 'student' as const,
+		account,
+		admin: null,
+		student: account
+	};
+};

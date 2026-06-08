@@ -19,7 +19,7 @@ const securityHandle: Handle = async ({ event, resolve }) => {
 	response.headers.set('X-Frame-Options', 'DENY');
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-	response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+	// response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 	response.headers.set('X-XSS-Protection', '1; mode=block');
 
 	return response;
@@ -48,12 +48,15 @@ const authenticationHandle: Handle = async ({ event, resolve }) => {
 			const [result] = await db
 				.select({
 					id: userTable.id,
-					username: userTable.username,
-					roleId: userTable.roleId,
+					role: userTable.role,
 					email: userTable.email,
 					name: userTable.name,
 					photo: userTable.photo,
-					// age: userTable.age
+					phone: userTable.phone,
+					education: userTable.education,
+					motivation: userTable.motivation,
+					studentType: userTable.studentType,
+					companyName: userTable.companyName
 				})
 				.from(userTable)
 				.where(eq(userTable.id, user.id))

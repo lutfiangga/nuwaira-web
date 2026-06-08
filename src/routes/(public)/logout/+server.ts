@@ -1,12 +1,14 @@
+import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as auth from '$lib/app/server/auth';
-import { redirect } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async (event) => {
-    if (!event.locals.session) {
-        throw redirect(302, '/login');
-    }
-    await auth.invalidateSession(event.locals.session.id);
-    auth.deleteSessionTokenCookie(event);
-    throw redirect(302, '/login');
+	if (event.locals.user) {
+		await auth.invalidateUserSessions(event.locals.user.id);
+	} else if (event.locals.session) {
+		await auth.invalidateSession(event.locals.session.id);
+	}
+
+	auth.deleteSessionTokenCookie(event);
+	redirect(302, '/login');
 };
