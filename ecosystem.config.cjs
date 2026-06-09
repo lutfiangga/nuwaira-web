@@ -21,7 +21,7 @@ module.exports = {
         ...envVars,
         NODE_ENV: 'production',
         HOST: '127.0.0.1',
-        PORT: 4173,
+        PORT: 3231,
         BODY_SIZE_LIMIT: '4194304'
       }
     }

@@ -143,6 +143,7 @@
 							<thead class="bg-slate-50 text-slate-500">
 								<tr>
 									<th class="px-5 py-3 font-medium">Siswa</th>
+									<th class="px-5 py-3 font-medium">NIK</th>
 									<th class="px-5 py-3 font-medium">Kontak</th>
 									<th class="px-5 py-3 font-medium">Jalur</th>
 									<th class="px-5 py-3 font-medium">Pendidikan</th>
@@ -167,6 +168,7 @@
 												</div>
 											</div>
 										</td>
+										<td class="px-5 py-4 font-mono text-slate-600">{item.nik ?? '-'}</td>
 										<td class="px-5 py-4 text-slate-600">
 											<div class="space-y-1">
 												<p class="flex items-center gap-2">
@@ -194,7 +196,7 @@
 									</tr>
 								{:else}
 									<tr>
-										<td colspan="4" class="px-5 py-10 text-center text-slate-500">
+										<td colspan="5" class="px-5 py-10 text-center text-slate-500">
 											Belum ada pendaftar siswa.
 										</td>
 									</tr>
@@ -286,7 +288,11 @@
 				</div>
 			</header>
 
-			<div class="mt-6 grid gap-4 md:grid-cols-3">
+			<div class="mt-6 grid gap-4 md:grid-cols-4">
+				<div class="rounded-lg border bg-white p-5">
+					<p class="text-sm text-slate-500">NIK</p>
+					<p class="mt-2 font-mono text-lg font-semibold">{student.nik ?? '-'}</p>
+				</div>
 				<div class="rounded-lg border bg-white p-5">
 					<p class="text-sm text-slate-500">Jalur</p>
 					<p class="mt-2 text-lg font-semibold">{typeLabel}</p>

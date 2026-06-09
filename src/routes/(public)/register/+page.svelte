@@ -1,419 +1,218 @@
 <script lang="ts">
+	import { Eye, EyeOff, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Eye, EyeOff, ImagePlus, Loader2, UserRound, UsersRound } from '@lucide/svelte';
 	import Turnstile from '$lib/components/turnstile.svelte';
+
+	type LocationOption = {
+		id: string;
+		name: string;
+	};
 
 	type RegistrationForm = {
 		message?: string;
 		errors?: Record<string, string[] | undefined>;
+		values?: Record<string, string>;
 	};
 
-	let { form }: { form?: RegistrationForm } = $props();
+	let {
+		data,
+		form
+	}: {
+		data: { provinces: LocationOption[] };
+		form?: RegistrationForm;
+	} = $props();
 
-	let step = $state(1);
-	let studentType = $state<'personal' | 'business'>('personal');
-	let name = $state('');
-	let education = $state('');
-	let customEducation = $state('');
-	let phone = $state('');
-	let companyName = $state('');
-	let motivation = $state('');
-	let email = $state('');
-	let password = $state('');
-	let confirmPassword = $state('');
-	let photoInput = $state<HTMLInputElement | null>(null);
-	let photoPreview = $state<string | null>(null);
-	let photoStatus = $state('');
-	let photoBusy = $state(false);
-	let formAlert = $state('');
-	let submittedStep = $state<1 | 2 | null>(null);
+	const values = $derived(form?.values ?? {});
+	const errors = $derived(form?.errors ?? {});
+	const selectClass =
+		'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50';
+
+	let provinceId = $state('');
+	let regencyId = $state('');
+	let districtId = $state('');
+	let villageId = $state('');
+	let regencies = $state<LocationOption[]>([]);
+	let districts = $state<LocationOption[]>([]);
+	let villages = $state<LocationOption[]>([]);
+	let restoredForm = $state<RegistrationForm | undefined>();
+	let loadingLevel = $state<'regencies' | 'districts' | 'villages' | null>(null);
+	let locationError = $state('');
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let turnstileToken = $state('');
 
-	const educationOptions = [
-		'SD sederajat',
-		'SMP/MTs sederajat',
-		'SMA/SMK sederajat',
-		'D1',
-		'D2',
-		'D3',
-		'D4',
-		'S1',
-		'S2',
-		'S3',
-		'Karyawan/Profesional',
-		'Lainnya'
-	];
-	const errors = $derived(form?.errors ?? {});
+	const religions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
+	const guardianRelations = ['Orang Tua', 'Saudara', 'Wali Asuh', 'Lainnya'];
+	const referralSources = ['Teman', 'Keluarga', 'Instagram', 'TikTok', 'Google', 'Lainnya'];
+	const maxBirthDate = new Date().toISOString().slice(0, 10);
 
-	const val = (step: typeof submittedStep) =>
-		({
-			name: step === 1 && name.trim().length < 2 && 'Nama lengkap wajib diisi.',
-			education: step === 1 && !education && 'Pendidikan wajib dipilih.',
-			customEducation:
-				step === 1 && education === 'Lainnya' && customEducation.trim().length < 2 && 'Tulis pendidikan lainnya terlebih dahulu.',
-			phone: step === 1 && phone.trim().length < 8 && 'Nomor HP wajib diisi.',
-			companyName:
-				step === 1 && studentType === 'business' && companyName.trim().length < 2 && 'Nama bisnis/perusahaan wajib diisi untuk jalur business.',
-			motivation: step === 1 && motivation.trim().length < 20 && 'Motivasi minimal 20 karakter.',
-			email: step === 2 && !email.trim() && 'Email wajib diisi.' || step === 2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && 'Format email belum valid.',
-			password: step === 2 && password.length < 8 && 'Password minimal 8 karakter.',
-			confirmPassword: step === 2 && confirmPassword.length < 8 && 'Konfirmasi password wajib diisi.' || step === 2 && password !== confirmPassword && 'Konfirmasi password tidak sama.'
-		} as Record<string, string | false>);
+	$effect(() => {
+		if (form === restoredForm) return;
 
-	const clientErrors = $derived(
-		Object.fromEntries(
-			Object.entries(val(submittedStep)).filter(([, v]) => v)
-		) as Record<string, string>
-	);
+		restoredForm = form;
+		provinceId = form?.values?.provinceId ?? '';
+		regencyId = form?.values?.regencyId ?? '';
+		districtId = form?.values?.districtId ?? '';
+		villageId = form?.values?.villageId ?? '';
+		void restoreLocations();
+	});
 
-	const stepOneRules = [
-		{ test: () => name.trim().length < 2, message: 'Nama lengkap wajib diisi.' },
-		{ test: () => !education, message: 'Pendidikan wajib dipilih.' },
-		{ test: () => education === 'Lainnya' && customEducation.trim().length < 2, message: 'Tulis pendidikan lainnya terlebih dahulu.' },
-		{ test: () => phone.trim().length < 8, message: 'Nomor HP wajib diisi.' },
-		{ test: () => studentType === 'business' && companyName.trim().length < 2, message: 'Nama bisnis/perusahaan wajib diisi untuk jalur business.' },
-		{ test: () => motivation.trim().length < 20, message: 'Motivasi minimal 20 karakter.' }
-	] as const;
+	async function restoreLocations() {
+		if (!provinceId) return;
 
-	const stepTwoRules = [
-		{ test: () => !email.trim(), message: 'Email wajib diisi.' },
-		{ test: () => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), message: 'Format email belum valid.' },
-		{ test: () => password.length < 8, message: 'Password minimal 8 karakter.' },
-		{ test: () => confirmPassword.length < 8, message: 'Konfirmasi password wajib diisi.' },
-		{ test: () => password !== confirmPassword, message: 'Konfirmasi password tidak sama.' },
-		{ test: () => photoBusy, message: 'Tunggu proses foto selesai dulu.' }
-	] as const;
+		regencies = await fetchLocations('regencies', provinceId);
+		if (!regencyId) return;
 
-	function clearFormAlert() {
-		formAlert = '';
+		districts = await fetchLocations('districts', regencyId);
+		if (!districtId) return;
+
+		villages = await fetchLocations('villages', districtId);
 	}
 
-	function validateStepOne() {
-		return stepOneRules.find((r) => r.test())?.message ?? '';
-	}
+	async function fetchLocations(level: 'regencies' | 'districts' | 'villages', parentId: string) {
+		if (!parentId) return [];
 
-	function validateStepTwo() {
-		return stepTwoRules.find((r) => r.test())?.message ?? '';
-	}
-
-	function nextStep() {
-		submittedStep = 1;
-		formAlert = validateStepOne();
-		if (formAlert) return;
-
-		formAlert = '';
-		submittedStep = null;
-		step = 2;
-	}
-
-	function previousStep() {
-		formAlert = '';
-		submittedStep = null;
-		step = 1;
-	}
-
-	function handleSubmit(event: SubmitEvent) {
-		submittedStep = 2;
-		formAlert = validateStepTwo();
-		if (formAlert) event.preventDefault();
-	}
-
-	async function handlePhotoChange(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) {
-			if (photoPreview) URL.revokeObjectURL(photoPreview);
-			photoPreview = null;
-			photoStatus = '';
-			return;
-		}
-
-		photoBusy = true;
-		photoStatus = 'Memproses foto...';
+		loadingLevel = level;
+		locationError = '';
 
 		try {
-			const compressed = await compressImageToWebp(file);
-			const dataTransfer = new DataTransfer();
-			dataTransfer.items.add(compressed);
-			input.files = dataTransfer.files;
+			const response = await fetch(
+				`/api/locations?level=${level}&parentId=${encodeURIComponent(parentId)}`
+			);
 
-			if (photoPreview) URL.revokeObjectURL(photoPreview);
-			photoPreview = URL.createObjectURL(compressed);
-			photoStatus = `${formatBytes(file.size)} -> ${formatBytes(compressed.size)} WebP`;
+			if (!response.ok) throw new Error('Gagal memuat data lokasi');
+
+			const result: unknown = await response.json();
+			return Array.isArray(result) ? (result as LocationOption[]) : [];
 		} catch (error) {
-			console.error('Photo processing failed:', error);
-			input.value = '';
-			photoPreview = null;
-			photoStatus = 'Foto gagal diproses. Pilih gambar lain.';
+			console.error('Location request failed:', error);
+			locationError = 'Data lokasi gagal dimuat. Silakan coba pilih kembali.';
+			return [];
 		} finally {
-			photoBusy = false;
+			loadingLevel = null;
 		}
 	}
 
-	function compressImageToWebp(file: File) {
-		return new Promise<File>((resolve, reject) => {
-			const image = new Image();
-			const url = URL.createObjectURL(file);
-
-			image.onload = () => {
-				const maxDimension = 960;
-				const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
-				const width = Math.max(1, Math.round(image.width * scale));
-				const height = Math.max(1, Math.round(image.height * scale));
-				const canvas = document.createElement('canvas');
-				canvas.width = width;
-				canvas.height = height;
-
-				const context = canvas.getContext('2d');
-				if (!context) {
-					URL.revokeObjectURL(url);
-					reject(new Error('Canvas tidak tersedia'));
-					return;
-				}
-
-				context.drawImage(image, 0, 0, width, height);
-				canvas.toBlob(
-					(blob) => {
-						URL.revokeObjectURL(url);
-						if (!blob) {
-							reject(new Error('Gagal membuat WebP'));
-							return;
-						}
-
-						const name = `${file.name.replace(/\.[^.]+$/, '') || 'photo'}.webp`;
-						resolve(new File([blob], name, { type: 'image/webp', lastModified: Date.now() }));
-					},
-					'image/webp',
-					0.78
-				);
-			};
-
-			image.onerror = () => {
-				URL.revokeObjectURL(url);
-				reject(new Error('Gambar tidak valid'));
-			};
-
-			image.src = url;
-		});
+	async function handleProvinceChange(event: Event) {
+		provinceId = (event.currentTarget as HTMLSelectElement).value;
+		regencyId = '';
+		districtId = '';
+		villageId = '';
+		districts = [];
+		villages = [];
+		regencies = await fetchLocations('regencies', provinceId);
 	}
 
-	function formatBytes(bytes: number) {
-		if (bytes < 1024) return `${bytes} B`;
-		if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-		return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+	async function handleRegencyChange(event: Event) {
+		regencyId = (event.currentTarget as HTMLSelectElement).value;
+		districtId = '';
+		villageId = '';
+		villages = [];
+		districts = await fetchLocations('districts', regencyId);
+	}
+
+	async function handleDistrictChange(event: Event) {
+		districtId = (event.currentTarget as HTMLSelectElement).value;
+		villageId = '';
+		villages = await fetchLocations('villages', districtId);
 	}
 </script>
 
 <svelte:head>
-	<title>Daftar Bootcamp | Nuwaira Academy</title>
+	<title>Pendaftaran Siswa | Nuwaira Academy</title>
 	<meta
 		name="description"
-		content="Daftar bootcamp Nuwaira Academy untuk jalur personal atau business."
+		content="Form pendaftaran siswa Nuwaira Academy untuk program coding dan AI."
 	/>
 </svelte:head>
 
-<main class="min-h-screen bg-slate-950 text-white">
-	<section
-		class="mx-auto grid min-h-screen w-full max-w-full gap-8 px-5 py-8 lg:grid-cols-[0.85fr_1.15fr] lg:px-8"
-	>
-		<div class="flex flex-col justify-between rounded-lg border border-white/10 bg-white/5 p-6">
-			<a href="/" class="inline-flex w-fit items-center">
-				<img src="/images/logo.svg" alt="Nuwaira Academy" class="h-9 w-auto" />
-			</a>
+{#snippet fieldError(field: string)}
+	{#if errors[field]?.[0]}
+		<p class="text-sm text-red-600">{errors[field][0]}</p>
+	{/if}
+{/snippet}
 
-			<div class="py-10">
-				<p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-200">
-					Bootcamp Intake
-				</p>
-				<h1 class="mt-4 max-w-xl text-4xl font-semibold leading-tight md:text-5xl">
-					Mulai belajar coding dengan AI di jalur yang sesuai kebutuhanmu.
-				</h1>
-				<p class="mt-5 max-w-lg text-base leading-7 text-white/70">
-					Pilih jalur personal untuk pengembangan diri, atau business untuk kebutuhan training tim
-					dan perusahaan.
-				</p>
-			</div>
+<main class="min-h-screen bg-[#F5F7FB] px-4 py-8 text-slate-950 sm:px-6 lg:py-12">
+	<div class="mx-auto w-full max-w-5xl">
+		<a href="/" class="mb-8 inline-flex items-center">
+			<img src="/images/logo.svg" alt="Nuwaira Academy" class="h-9 w-auto" />
+		</a>
+
+		<div class="mb-8 max-w-3xl">
+			<p class="text-brand text-sm font-semibold uppercase tracking-[0.18em]">Pendaftaran Siswa</p>
+			<h1 class="font-raleway mt-3 text-4xl font-semibold sm:text-5xl">
+				Mulai perjalanan belajarmu bersama Nuwaira
+			</h1>
+			<p class="mt-4 leading-7 text-slate-600">
+				Isi data dengan benar sesuai identitas. Data ini digunakan untuk proses administrasi dan
+				pendampingan selama program.
+			</p>
 		</div>
 
-		{#snippet err(field: string)}
-			{@const msg = clientErrors[field] || errors[field]?.[0]}
-			{#if msg}<span class="text-sm text-red-600">{msg}</span>{/if}
-		{/snippet}
-
-		<form
-			method="post"
-			enctype="multipart/form-data"
-			novalidate
-			oninput={clearFormAlert}
-			onchange={clearFormAlert}
-			onsubmit={handleSubmit}
-			class="rounded-lg bg-white p-5 text-slate-950 shadow-2xl md:p-8"
-		>
-			<input type="hidden" name="studentType" value={studentType} />
-			{#if step === 2}
-				<input type="hidden" name="name" value={name} />
-				<input type="hidden" name="education" value={education} />
-				<input type="hidden" name="customEducation" value={customEducation} />
-				<input type="hidden" name="phone" value={phone} />
-				<input
-					type="hidden"
-					name="companyName"
-					value={studentType === 'business' ? companyName : ''}
-				/>
-				<input type="hidden" name="motivation" value={motivation} />
-			{/if}
-
-			<div class="mb-6 flex items-center justify-between gap-4">
-				<div>
-					<p class="text-sm font-medium text-slate-500">Step {step} dari 2</p>
-					<h2 class="text-2xl font-semibold">{step === 1 ? 'Profil pendaftar' : 'Akun'}</h2>
-				</div>
-				<div class="flex gap-2">
-					<span class={`h-2.5 w-10 rounded-full ${step === 1 ? 'bg-blue-700' : 'bg-blue-200'}`}
-					></span>
-					<span class={`h-2.5 w-10 rounded-full ${step === 2 ? 'bg-blue-700' : 'bg-slate-200'}`}
-					></span>
-				</div>
-			</div>
-
-			{#if formAlert}
-				<div
-					class="mb-5 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800"
-				>
-					{formAlert}
-				</div>
-			{/if}
-
+		<form method="post" class="space-y-6" novalidate>
 			{#if form?.message}
-				<div class="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+				<div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
 					{form.message}
 				</div>
 			{/if}
 
-			{#if step === 1}
-				<div class="space-y-5">
-					<div class="grid gap-3 sm:grid-cols-2">
-						<button
-							type="button"
-							class={`rounded-lg border p-4 text-left transition ${studentType === 'personal' ? 'border-blue-700 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}
-							onclick={() => {
-								studentType = 'personal';
-								clearFormAlert();
-							}}
-						>
-							<UserRound class="h-5 w-5 text-blue-700" />
-							<p class="mt-3 font-semibold">Personal</p>
-							<p class="mt-1 text-sm text-slate-500">Untuk individu yang ingin upgrade skill.</p>
-						</button>
-						<button
-							type="button"
-							class={`rounded-lg border p-4 text-left transition ${studentType === 'business' ? 'border-blue-700 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}
-							onclick={() => {
-								studentType = 'business';
-								clearFormAlert();
-							}}
-						>
-							<UsersRound class="h-5 w-5 text-blue-700" />
-							<p class="mt-3 font-semibold">Business</p>
-							<p class="mt-1 text-sm text-slate-500">
-								Untuk kebutuhan training tim atau perusahaan.
-							</p>
-						</button>
-					</div>
+			<fieldset class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+				<legend class="font-raleway px-2 text-2xl font-semibold">Data Diri</legend>
 
-					<label class="grid gap-2">
-						<span class="text-sm font-medium">Nama lengkap</span>
+				<div class="mt-4 grid gap-5 sm:grid-cols-2">
+					<label class="grid gap-2 sm:col-span-2">
+						<span class="text-sm font-medium">Nama lengkap sesuai identitas (KTP)</span>
 						<Input
-							name="name"
+							name="fullName"
 							required
 							autocomplete="name"
 							placeholder="Nama lengkap"
-							bind:value={name}
+							value={values.fullName ?? ''}
 						/>
-						{@render err('name')}
+						{@render fieldError('fullName')}
 					</label>
-
-					<div class="grid gap-4 sm:grid-cols-2">
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">Pendidikan</span>
-							<select
-								name="education"
-								required
-								bind:value={education}
-								class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-							>
-								<option value="">Pilih pendidikan</option>
-								{#each educationOptions as option (option)}
-									<option value={option}>{option}</option>
-								{/each}
-							</select>
-							{@render err('education')}
-						</label>
-
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">No HP</span>
-							<Input
-								name="phone"
-								required
-								inputmode="tel"
-								autocomplete="tel"
-								placeholder="08xxxxxxxxxx"
-								bind:value={phone}
-							/>
-							{@render err('phone')}
-						</label>
-					</div>
-
-					{#if education === 'Lainnya'}
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">Tulis pendidikan</span>
-							<Input
-								name="customEducation"
-								required
-								placeholder="Contoh: Bootcamp, homeschooling, autodidak"
-								bind:value={customEducation}
-							/>
-							{@render err('customEducation')}
-						</label>
-					{/if}
-
-					{#if studentType === 'business'}
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">Nama bisnis/perusahaan</span>
-							<Input
-								name="companyName"
-								required
-								placeholder="PT / brand / komunitas"
-								bind:value={companyName}
-							/>
-							{@render err('companyName')}
-						</label>
-					{:else}
-						<input type="hidden" name="companyName" value="" />
-					{/if}
 
 					<label class="grid gap-2">
-						<span class="text-sm font-medium">Motivasi mengikuti bootcamp</span>
-						<Textarea
-							name="motivation"
+						<span class="text-sm font-medium">NIK</span>
+						<Input
+							name="nik"
 							required
-							rows={5}
-							placeholder="Ceritakan target belajar atau kebutuhan trainingmu."
-							bind:value={motivation}
+							inputmode="numeric"
+							pattern="[0-9]{16}"
+							maxlength={16}
+							placeholder="16 digit NIK"
+							value={values.nik ?? ''}
 						/>
-						{@render err('motivation')}
+						{@render fieldError('nik')}
 					</label>
 
-					<div class="flex justify-end">
-						<Button type="button" class="rounded-md px-6" onclick={nextStep}>Lanjut</Button>
-					</div>
-				</div>
-			{:else}
-				<div class="space-y-5">
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Tanggal lahir</span>
+						<Input
+							name="birthDate"
+							required
+							type="date"
+							max={maxBirthDate}
+							value={values.birthDate ?? ''}
+						/>
+						{@render fieldError('birthDate')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">WhatsApp</span>
+						<Input
+							name="whatsapp"
+							required
+							inputmode="tel"
+							autocomplete="tel"
+							placeholder="08xxxxxxxxxx"
+							value={values.whatsapp ?? ''}
+						/>
+						{@render fieldError('whatsapp')}
+					</label>
+
 					<label class="grid gap-2">
 						<span class="text-sm font-medium">Email</span>
 						<Input
@@ -422,121 +221,346 @@
 							type="email"
 							autocomplete="email"
 							placeholder="nama@email.com"
-							bind:value={email}
+							value={values.email ?? ''}
 						/>
-						{@render err('email')}
+						{@render fieldError('email')}
 					</label>
 
-					<div class="grid gap-4 sm:grid-cols-2">
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">Password</span>
-							<div class="relative">
-								<Input
-									name="password"
-									required
-									type={showPassword ? 'text' : 'password'}
-									autocomplete="new-password"
-									minlength={8}
-									bind:value={password}
-									class="pr-10"
-								/>
-								<button
-									type="button"
-									class="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-									aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-									onclick={() => (showPassword = !showPassword)}
-								>
-									{#if showPassword}
-										<EyeOff class="h-4 w-4" />
-									{:else}
-										<Eye class="h-4 w-4" />
-									{/if}
-								</button>
-							</div>
-							{@render err('password')}
-						</label>
-
-						<label class="grid gap-2">
-							<span class="text-sm font-medium">Konfirmasi password</span>
-							<div class="relative">
-								<Input
-									name="confirmPassword"
-									required
-									type={showConfirmPassword ? 'text' : 'password'}
-									autocomplete="new-password"
-									minlength={8}
-									bind:value={confirmPassword}
-									class="pr-10"
-								/>
-								<button
-									type="button"
-									class="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-									aria-label={showConfirmPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-									onclick={() => (showConfirmPassword = !showConfirmPassword)}
-								>
-									{#if showConfirmPassword}
-										<EyeOff class="h-4 w-4" />
-									{:else}
-										<Eye class="h-4 w-4" />
-									{/if}
-								</button>
-							</div>
-							{@render err('confirmPassword')}
-						</label>
-					</div>
+					<label class="grid gap-2 sm:col-span-2">
+						<span class="text-sm font-medium">Alamat lengkap</span>
+						<Textarea
+							name="fullAddress"
+							required
+							rows={4}
+							placeholder="Dusun, RT/RW, jalan, nomor rumah, dan detail alamat lainnya"
+							value={values.fullAddress ?? ''}
+						/>
+						{@render fieldError('fullAddress')}
+					</label>
 
 					<label class="grid gap-2">
-						<span class="text-sm font-medium">Foto profil</span>
-						<div
-							class="grid gap-4 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-[120px_1fr]"
+						<span class="text-sm font-medium">Provinsi</span>
+						<select
+							name="provinceId"
+							required
+							class={selectClass}
+							value={provinceId}
+							onchange={handleProvinceChange}
 						>
-							<div
-								class="flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-slate-100"
-							>
-								{#if photoPreview}
-									<img
-										src={photoPreview}
-										alt="Preview foto profil"
-										class="h-full w-full object-cover"
-									/>
-								{:else}
-									<ImagePlus class="h-8 w-8 text-slate-400" />
-								{/if}
-							</div>
-							<div class="flex flex-col justify-center gap-3">
-								<Input
-									bind:ref={photoInput}
-									name="photo"
-									type="file"
-									accept="image/*"
-									onchange={handlePhotoChange}
-								/>
-								{#if photoStatus}
-									<p class="text-sm font-medium text-blue-700">{photoStatus}</p>
-								{/if}
-								{#if errors.photo}<span class="text-sm text-red-600">{errors.photo[0]}</span>{/if}
-							</div>
-						</div>
+							<option value="">Pilih provinsi</option>
+							{#each data.provinces as province (province.id)}
+								<option value={province.id}>{province.name}</option>
+							{/each}
+						</select>
+						{@render fieldError('provinceId')}
 					</label>
 
-					<div class="flex justify-center">
-						<Turnstile bind:token={turnstileToken} />
-					</div>
-					<input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Kabupaten/kota (domisili)</span>
+						<select
+							name="regencyId"
+							required
+							class={selectClass}
+							value={regencyId}
+							onchange={handleRegencyChange}
+							disabled={!provinceId || loadingLevel === 'regencies'}
+						>
+							<option value="">
+								{loadingLevel === 'regencies' ? 'Memuat kabupaten/kota...' : 'Pilih kabupaten/kota'}
+							</option>
+							{#each regencies as regency (regency.id)}
+								<option value={regency.id}>{regency.name}</option>
+							{/each}
+						</select>
+						{@render fieldError('regencyId')}
+					</label>
 
-					<div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-						<Button type="button" variant="outline" onclick={previousStep}>Kembali</Button>
-						<Button type="submit" class="rounded-md px-6" disabled={photoBusy}>
-							{#if photoBusy}
-								<Loader2 class="h-4 w-4 animate-spin" />
-								Menyiapkan foto
-							{:else}
-								Buat akun
-							{/if}
-						</Button>
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Kecamatan</span>
+						<select
+							name="districtId"
+							required
+							class={selectClass}
+							value={districtId}
+							onchange={handleDistrictChange}
+							disabled={!regencyId || loadingLevel === 'districts'}
+						>
+							<option value="">
+								{loadingLevel === 'districts' ? 'Memuat kecamatan...' : 'Pilih kecamatan'}
+							</option>
+							{#each districts as district (district.id)}
+								<option value={district.id}>{district.name}</option>
+							{/each}
+						</select>
+						{@render fieldError('districtId')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Kelurahan/desa</span>
+						<select
+							name="villageId"
+							required
+							class={selectClass}
+							bind:value={villageId}
+							disabled={!districtId || loadingLevel === 'villages'}
+						>
+							<option value="">
+								{loadingLevel === 'villages' ? 'Memuat kelurahan/desa...' : 'Pilih kelurahan/desa'}
+							</option>
+							{#each villages as village (village.id)}
+								<option value={village.id}>{village.name}</option>
+							{/each}
+						</select>
+						{@render fieldError('villageId')}
+					</label>
+
+					{#if locationError}
+						<p class="text-sm text-red-600 sm:col-span-2">{locationError}</p>
+					{/if}
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Pendidikan aktif</span>
+						<Input
+							name="activeEducation"
+							required
+							placeholder="Contoh: SMA kelas 12, S1 Informatika"
+							value={values.activeEducation ?? ''}
+						/>
+						{@render fieldError('activeEducation')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Agama</span>
+						<select name="religion" required class={selectClass} value={values.religion ?? ''}>
+							<option value="">Pilih agama</option>
+							{#each religions as religion (religion)}
+								<option value={religion}>{religion}</option>
+							{/each}
+						</select>
+						{@render fieldError('religion')}
+					</label>
+				</div>
+			</fieldset>
+
+			<fieldset class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+				<legend class="font-raleway px-2 text-2xl font-semibold">Data Wali</legend>
+
+				<div class="mt-4 grid gap-5 sm:grid-cols-2">
+					<label class="grid gap-2 sm:col-span-2">
+						<span class="text-sm font-medium">Nama wali</span>
+						<Input
+							name="guardianName"
+							required
+							placeholder="Nama lengkap wali"
+							value={values.guardianName ?? ''}
+						/>
+						{@render fieldError('guardianName')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Hubungan dengan wali</span>
+						<select
+							name="guardianRelation"
+							required
+							class={selectClass}
+							value={values.guardianRelation ?? ''}
+						>
+							<option value="">Pilih hubungan</option>
+							{#each guardianRelations as relation (relation)}
+								<option value={relation}>{relation}</option>
+							{/each}
+						</select>
+						{@render fieldError('guardianRelation')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">WhatsApp wali</span>
+						<Input
+							name="guardianWhatsapp"
+							required
+							inputmode="tel"
+							placeholder="08xxxxxxxxxx"
+							value={values.guardianWhatsapp ?? ''}
+						/>
+						{@render fieldError('guardianWhatsapp')}
+					</label>
+				</div>
+			</fieldset>
+
+			<fieldset class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+				<legend class="font-raleway px-2 text-2xl font-semibold">Data Lainnya</legend>
+
+				<div class="mt-4 grid gap-5">
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Dari mana mengetahui program ini?</span>
+						<select
+							name="referralSource"
+							required
+							class={selectClass}
+							value={values.referralSource ?? ''}
+						>
+							<option value="">Pilih sumber informasi</option>
+							{#each referralSources as source (source)}
+								<option value={source}>{source}</option>
+							{/each}
+						</select>
+						{@render fieldError('referralSource')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Tujuan mengikuti program ini</span>
+						<Textarea
+							name="programGoal"
+							required
+							rows={4}
+							placeholder="Ceritakan target dan tujuan belajarmu"
+							value={values.programGoal ?? ''}
+						/>
+						{@render fieldError('programGoal')}
+					</label>
+
+					<div class="grid gap-5 sm:grid-cols-2">
+						<fieldset class="rounded-2xl border border-slate-200 p-4">
+							<legend class="px-1 text-sm font-medium">Sudah memiliki basic programming?</legend>
+							<div class="mt-3 flex gap-6">
+								<label class="flex items-center gap-2">
+									<input
+										type="radio"
+										name="hasProgrammingBasics"
+										value="yes"
+										required
+										checked={values.hasProgrammingBasics === 'yes'}
+									/>
+									<span>Ya</span>
+								</label>
+								<label class="flex items-center gap-2">
+									<input
+										type="radio"
+										name="hasProgrammingBasics"
+										value="no"
+										required
+										checked={values.hasProgrammingBasics === 'no'}
+									/>
+									<span>Tidak</span>
+								</label>
+							</div>
+							{@render fieldError('hasProgrammingBasics')}
+						</fieldset>
+
+						<fieldset class="rounded-2xl border border-slate-200 p-4">
+							<legend class="px-1 text-sm font-medium">
+								Sudah menggunakan tools AI sehari-hari?
+							</legend>
+							<div class="mt-3 flex gap-6">
+								<label class="flex items-center gap-2">
+									<input
+										type="radio"
+										name="usesAiTools"
+										value="yes"
+										required
+										checked={values.usesAiTools === 'yes'}
+									/>
+									<span>Ya</span>
+								</label>
+								<label class="flex items-center gap-2">
+									<input
+										type="radio"
+										name="usesAiTools"
+										value="no"
+										required
+										checked={values.usesAiTools === 'no'}
+									/>
+									<span>Tidak</span>
+								</label>
+							</div>
+							{@render fieldError('usesAiTools')}
+						</fieldset>
 					</div>
 				</div>
-			{/if}
+			</fieldset>
+
+			<fieldset class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+				<legend class="font-raleway px-2 text-2xl font-semibold">Keamanan Akun</legend>
+
+				<div class="mt-4 grid gap-5 sm:grid-cols-2">
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Password</span>
+						<div class="relative">
+							<Input
+								name="password"
+								required
+								type={showPassword ? 'text' : 'password'}
+								autocomplete="new-password"
+								minlength={8}
+								class="pr-11"
+							/>
+							<button
+								type="button"
+								class="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+								aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+								onclick={() => (showPassword = !showPassword)}
+							>
+								{#if showPassword}
+									<EyeOff class="size-4" />
+								{:else}
+									<Eye class="size-4" />
+								{/if}
+							</button>
+						</div>
+						{@render fieldError('password')}
+					</label>
+
+					<label class="grid gap-2">
+						<span class="text-sm font-medium">Konfirmasi password</span>
+						<div class="relative">
+							<Input
+								name="confirmPassword"
+								required
+								type={showConfirmPassword ? 'text' : 'password'}
+								autocomplete="new-password"
+								minlength={8}
+								class="pr-11"
+							/>
+							<button
+								type="button"
+								class="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+								aria-label={showConfirmPassword
+									? 'Sembunyikan konfirmasi password'
+									: 'Tampilkan konfirmasi password'}
+								onclick={() => (showConfirmPassword = !showConfirmPassword)}
+							>
+								{#if showConfirmPassword}
+									<EyeOff class="size-4" />
+								{:else}
+									<Eye class="size-4" />
+								{/if}
+							</button>
+						</div>
+						{@render fieldError('confirmPassword')}
+					</label>
+				</div>
+			</fieldset>
+
+			<div
+				class="flex flex-col items-center gap-5 rounded-3xl border border-slate-200 bg-white p-5 sm:p-8"
+			>
+				<Turnstile bind:token={turnstileToken} />
+				<input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
+
+				<Button
+					type="submit"
+					size="lg"
+					class="bg-brand w-full rounded-full text-white sm:w-auto sm:px-12"
+				>
+					{#if loadingLevel}
+						<Loader2 class="size-4 animate-spin" />
+					{/if}
+					Kirim Pendaftaran
+				</Button>
+				<p class="text-center text-sm text-slate-500">
+					Dengan mengirim form, kamu menyatakan data yang diberikan sudah benar.
+				</p>
+			</div>
 		</form>
-	</section>
+	</div>
 </main>

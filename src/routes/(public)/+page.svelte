@@ -1,6 +1,11 @@
 <script lang="ts">
-	// import HomeBenefitSection from '$lib/sections/homepage/home-benefit-section.svelte';
-	import HomeHeroSection from '$lib/sections/homepage/home-hero-section.svelte';
+	import Navbar from '$lib/components/commons/navbar.svelte';
+	import Hero from '$lib/sections/homepage/home-hero-section.svelte';
+	import Features from '$lib/sections/homepage/home-feature-section.svelte';
+	import Facilities from '$lib/sections/homepage/home-facilities-section.svelte';
+	import Program from '$lib/sections/homepage/home-program-section.svelte';
+	import Benefits from '$lib/sections/homepage/home-benefits-section.svelte';
+	import Testimonial from '$lib/sections/homepage/home-testimonial-section.svelte';
 </script>
 
 <svelte:head>
@@ -11,5 +16,10 @@
 	/>
 </svelte:head>
 
-<HomeHeroSection />
-<!-- <HomeBenefitSection /> -->
+<Navbar />
+<Hero />
+<Features />
+<Facilities />
+<Program />
+<Benefits />
+<Testimonial />

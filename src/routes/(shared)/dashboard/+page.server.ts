@@ -2,14 +2,15 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { asc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/app/database';
-import { user } from '$lib/app/database/schema';
+import { student as studentTable, user } from '$lib/app/database/schema';
+import { decryptSensitiveValue } from '$lib/app/server/encryption';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
 		redirect(302, '/login');
 	}
 
-	const [account] = await db
+	const [accountRow] = await db
 		.select({
 			id: user.id,
 			name: user.name,
@@ -20,15 +21,23 @@ export const load: PageServerLoad = async (event) => {
 			motivation: user.motivation,
 			studentType: user.studentType,
 			companyName: user.companyName,
-			photo: user.photo
+			photo: user.photo,
+			nikEncrypted: studentTable.nikEncrypted
 		})
 		.from(user)
+		.leftJoin(studentTable, eq(studentTable.userId, user.id))
 		.where(eq(user.id, event.locals.user.id))
 		.limit(1);
 
-	if (!account) {
+	if (!accountRow) {
 		redirect(302, '/login');
 	}
+
+	const { nikEncrypted, ...accountData } = accountRow;
+	const account = {
+		...accountData,
+		nik: decryptNik(nikEncrypted)
+	};
 
 	if (account.role === 'admin') {
 		const [summary] = await db
@@ -49,9 +58,11 @@ export const load: PageServerLoad = async (event) => {
 				phone: user.phone,
 				education: user.education,
 				studentType: user.studentType,
-				companyName: user.companyName
+				companyName: user.companyName,
+				nikEncrypted: studentTable.nikEncrypted
 			})
 			.from(user)
+			.leftJoin(studentTable, eq(studentTable.userId, user.id))
 			.where(eq(user.role, 'student'))
 			.orderBy(asc(user.name), asc(user.email))
 			.limit(8);
@@ -67,7 +78,10 @@ export const load: PageServerLoad = async (event) => {
 					totalPersonal: Number(summary?.totalPersonal ?? 0),
 					totalBusiness: Number(summary?.totalBusiness ?? 0)
 				},
-				students
+				students: students.map(({ nikEncrypted: encryptedNik, ...studentData }) => ({
+					...studentData,
+					nik: decryptNik(encryptedNik)
+				}))
 			},
 			student: null
 		};
@@ -84,3 +98,14 @@ export const load: PageServerLoad = async (event) => {
 		student: account
 	};
 };
+
+function decryptNik(value: string | null) {
+	if (!value) return null;
+
+	try {
+		return decryptSensitiveValue(value);
+	} catch (error) {
+		console.error('Failed to decrypt student NIK:', error);
+		return null;
+	}
+}

@@ -4,32 +4,20 @@ import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$lib/app/database';
-import { user } from '$lib/app/database/schema';
+import { student, user } from '$lib/app/database/schema';
+import { LocationService } from '$lib/app/services/location.service';
 import * as auth from '$lib/app/server/auth';
 import { hashPassword } from '$lib/app/server/auth';
-import { uploadCloudinaryImage } from '$lib/app/server/cloudinary';
+import { createSensitiveIndex, encryptSensitiveValue } from '$lib/app/server/encryption';
 import { verifyTurnstileToken } from '$lib/app/server/turnstile';
 
-const FormStringSchema = (message: string) =>
+const requiredString = (message: string, minLength = 1) =>
 	z.preprocess(
 		(value) => (typeof value === 'string' ? value : ''),
-		z.string().trim().min(1, message)
+		z.string().trim().min(minLength, message)
 	);
 
-const OptionalFormStringSchema = z.preprocess(
-	(value) => (typeof value === 'string' && value.trim().length > 0 ? value : undefined),
-	z.string().trim().optional()
-);
-
-const StudentTypeSchema = z.preprocess(
-	(value) => (value === 'personal' || value === 'business' ? value : ''),
-	z
-		.string()
-		.refine((value) => value === 'personal' || value === 'business', 'Pilih jalur pendaftaran')
-		.transform((value) => value as 'personal' | 'business')
-);
-
-const EmailSchema = z.preprocess(
+const emailSchema = z.preprocess(
 	(value) => (typeof value === 'string' ? value : ''),
 	z
 		.string()
@@ -39,89 +27,89 @@ const EmailSchema = z.preprocess(
 		.transform((value) => value.toLowerCase())
 );
 
-const OptionalPhotoSchema = z.preprocess(
-	(value) => (value instanceof File && value.size > 0 ? value : undefined),
-	z
-		.instanceof(File)
-		.refine((file) => file.type.startsWith('image/'), 'File harus berupa gambar')
-		.refine((file) => file.type !== 'image/gif', 'GIF tidak didukung')
-		.refine((file) => file.size <= 5 * 1024 * 1024, 'Foto maksimal 5MB')
-		.optional()
-);
+const whatsappSchema = (message: string) =>
+	z.preprocess(
+		(value) => (typeof value === 'string' ? value : ''),
+		z
+			.string()
+			.trim()
+			.min(8, message)
+			.regex(/^[0-9+\-\s()]+$/, 'Nomor WhatsApp tidak valid')
+	);
 
-const RegistrationSchema = z
+const yesNoSchema = (message: string) =>
+	z.preprocess(
+		(value) => (value === 'yes' || value === 'no' ? value : ''),
+		z.enum(['yes', 'no'], { message }).transform((value) => value === 'yes')
+	);
+
+const registrationSchema = z
 	.object({
-		studentType: StudentTypeSchema,
-		name: FormStringSchema('Nama wajib diisi').pipe(z.string().min(2, 'Nama minimal 2 karakter')),
-		education: FormStringSchema('Pendidikan wajib diisi').pipe(
-			z.string().min(2, 'Pendidikan wajib diisi')
+		fullName: requiredString('Nama lengkap wajib diisi', 2),
+		nik: z.preprocess(
+			(value) => (typeof value === 'string' ? value.trim() : ''),
+			z.string().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit')
 		),
-		customEducation: OptionalFormStringSchema,
-		motivation: FormStringSchema('Motivasi wajib diisi').pipe(
-			z.string().min(20, 'Motivasi minimal 20 karakter')
-		),
-		phone: z.preprocess(
+		birthDate: z.preprocess(
 			(value) => (typeof value === 'string' ? value : ''),
 			z
 				.string()
-				.trim()
-				.min(8, 'Nomor HP wajib diisi')
-				.regex(/^[0-9+\-\s()]+$/, 'Nomor HP tidak valid')
+				.regex(/^\d{4}-\d{2}-\d{2}$/, 'Tanggal lahir wajib diisi')
+				.refine((value) => new Date(`${value}T00:00:00`).getTime() <= Date.now(), {
+					message: 'Tanggal lahir tidak valid'
+				})
 		),
-		companyName: OptionalFormStringSchema,
-		email: EmailSchema,
-		password: FormStringSchema('Password wajib diisi').pipe(
-			z.string().min(8, 'Password minimal 8 karakter')
-		),
-		confirmPassword: FormStringSchema('Konfirmasi password wajib diisi').pipe(
-			z.string().min(8, 'Konfirmasi password minimal 8 karakter')
-		),
-		photo: OptionalPhotoSchema,
+		whatsapp: whatsappSchema('WhatsApp wajib diisi'),
+		email: emailSchema,
+		fullAddress: requiredString('Alamat lengkap wajib diisi', 10),
+		provinceId: requiredString('Provinsi wajib dipilih'),
+		regencyId: requiredString('Kabupaten/kota wajib dipilih'),
+		districtId: requiredString('Kecamatan wajib dipilih'),
+		villageId: requiredString('Kelurahan/desa wajib dipilih'),
+		activeEducation: requiredString('Pendidikan aktif wajib diisi', 2),
+		religion: requiredString('Agama wajib dipilih'),
+		guardianName: requiredString('Nama wali wajib diisi', 2),
+		guardianRelation: requiredString('Hubungan dengan wali wajib dipilih'),
+		guardianWhatsapp: whatsappSchema('WhatsApp wali wajib diisi'),
+		referralSource: requiredString('Sumber informasi wajib dipilih'),
+		programGoal: requiredString('Tujuan mengikuti program wajib diisi', 10),
+		hasProgrammingBasics: yesNoSchema('Pilih pengalaman basic programming'),
+		usesAiTools: yesNoSchema('Pilih pengalaman menggunakan tools AI'),
+		password: requiredString('Password wajib diisi', 8),
+		confirmPassword: requiredString('Konfirmasi password wajib diisi', 8),
 		cfTurnstileResponse: z.string().optional()
 	})
 	.refine((value) => value.password === value.confirmPassword, {
 		path: ['confirmPassword'],
 		message: 'Konfirmasi password tidak sama'
-	})
-	.refine((value) => value.studentType === 'personal' || Boolean(value.companyName?.trim()), {
-		path: ['companyName'],
-		message: 'Nama bisnis/perusahaan wajib diisi'
-	})
-	.refine((value) => value.education !== 'Lainnya' || Boolean(value.customEducation?.trim()), {
-		path: ['customEducation'],
-		message: 'Pendidikan lainnya wajib diisi'
 	});
+
+type FormValues = Record<string, string>;
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user?.role === 'student') {
 		redirect(302, '/dashboard');
 	}
 
-	return {};
+	return {
+		provinces: await LocationService.getProvinces()
+	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
 		const formData = await event.request.formData();
-		const result = RegistrationSchema.safeParse({
-			studentType: formData.get('studentType'),
-			name: formData.get('name'),
-			education: formData.get('education'),
-			customEducation: formData.get('customEducation'),
-			motivation: formData.get('motivation'),
-			phone: formData.get('phone'),
-			companyName: formData.get('companyName'),
-			email: formData.get('email'),
-			password: formData.get('password'),
-			confirmPassword: formData.get('confirmPassword'),
-			photo: formData.get('photo'),
+		const values = getFormValues(formData);
+		const result = registrationSchema.safeParse({
+			...values,
 			cfTurnstileResponse: formData.get('cf-turnstile-response')
 		});
 
 		if (!result.success) {
 			return fail(400, {
 				message: 'Data pendaftaran belum lengkap',
-				errors: result.error.flatten().fieldErrors
+				errors: result.error.flatten().fieldErrors,
+				values
 			});
 		}
 
@@ -129,60 +117,112 @@ export const actions: Actions = {
 		if (!turnstileValid) {
 			return fail(400, {
 				message: 'Verifikasi CAPTCHA gagal. Silakan coba lagi.',
-				errors: {}
+				errors: {},
+				values
 			});
 		}
 
 		const payload = result.data;
-		const existingEmail = await db
-			.select({ id: user.id })
-			.from(user)
-			.where(eq(user.email, payload.email))
-			.limit(1);
+		const location = await resolveLocation(payload);
 
-		if (existingEmail.length > 0) {
+		if (!location) {
 			return fail(400, {
-				message: 'Email sudah terdaftar',
-				errors: { email: ['Email sudah terdaftar'] }
+				message: 'Data lokasi tidak valid atau layanan lokasi sedang tidak tersedia.',
+				errors: { provinceId: ['Pilih kembali lokasi domisili'] },
+				values
 			});
 		}
 
-		let userId = '';
-		try {
-			userId = generateUserId();
-			const education =
-				payload.education === 'Lainnya'
-					? payload.customEducation?.trim() || payload.education
-					: payload.education;
-			const [passwordHash, photo] = await Promise.all([
-				hashPassword(payload.password),
-				payload.photo ? uploadCloudinaryImage(payload.photo) : Promise.resolve(null)
-			]);
+		let nikHash = '';
+		let nikEncrypted = '';
 
-			await db.insert(user).values({
-				id: userId,
-				email: payload.email,
-				role: 'student',
-				name: payload.name,
-				phone: payload.phone,
-				education,
-				motivation: payload.motivation,
-				studentType: payload.studentType,
-				companyName:
-					payload.studentType === 'business' ? payload.companyName?.trim() || null : null,
-				photo: photo?.url ?? null,
-				passwordHash
+		try {
+			nikHash = createSensitiveIndex(payload.nik);
+			nikEncrypted = encryptSensitiveValue(payload.nik);
+		} catch (error) {
+			console.error('NIK encryption configuration error:', error);
+			return fail(500, {
+				message: 'Konfigurasi keamanan data belum tersedia.',
+				errors: {},
+				values
+			});
+		}
+
+		const [existingEmail, existingNik] = await Promise.all([
+			db.select({ id: user.id }).from(user).where(eq(user.email, payload.email)).limit(1),
+			db.select({ id: student.id }).from(student).where(eq(student.nikHash, nikHash)).limit(1)
+		]);
+
+		if (existingEmail.length > 0 || existingNik.length > 0) {
+			return fail(400, {
+				message: existingEmail.length > 0 ? 'Email sudah terdaftar' : 'NIK sudah terdaftar',
+				errors: {
+					...(existingEmail.length > 0 ? { email: ['Email sudah terdaftar'] } : {}),
+					...(existingNik.length > 0 ? { nik: ['NIK sudah terdaftar'] } : {})
+				},
+				values
+			});
+		}
+
+		const userId = generateId();
+
+		try {
+			const passwordHash = await hashPassword(payload.password);
+
+			await db.transaction(async (tx) => {
+				await tx.insert(user).values({
+					id: userId,
+					email: payload.email,
+					role: 'student',
+					name: payload.fullName,
+					phone: payload.whatsapp,
+					education: payload.activeEducation,
+					motivation: payload.programGoal,
+					studentType: 'personal',
+					companyName: null,
+					photo: null,
+					passwordHash
+				});
+
+				await tx.insert(student).values({
+					id: generateId(),
+					userId,
+					fullName: payload.fullName,
+					nikEncrypted,
+					nikHash,
+					birthDate: payload.birthDate,
+					whatsapp: payload.whatsapp,
+					email: payload.email,
+					fullAddress: payload.fullAddress,
+					provinceId: location.province.id,
+					provinceName: location.province.name,
+					regencyId: location.regency.id,
+					regencyName: location.regency.name,
+					districtId: location.district.id,
+					districtName: location.district.name,
+					villageId: location.village.id,
+					villageName: location.village.name,
+					activeEducation: payload.activeEducation,
+					religion: payload.religion,
+					guardianName: payload.guardianName,
+					guardianRelation: payload.guardianRelation,
+					guardianWhatsapp: payload.guardianWhatsapp,
+					referralSource: payload.referralSource,
+					programGoal: payload.programGoal,
+					hasProgrammingBasics: payload.hasProgrammingBasics,
+					usesAiTools: payload.usesAiTools
+				});
 			});
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userId);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (error) {
-			console.error('Bootcamp registration error:', error);
+			console.error('Student registration error:', error);
 			return fail(500, {
-				message:
-					error instanceof Error ? error.message : 'Pendaftaran gagal diproses. Silakan coba lagi.',
-				errors: {}
+				message: 'Pendaftaran gagal diproses. Silakan coba lagi.',
+				errors: {},
+				values
 			});
 		}
 
@@ -190,7 +230,61 @@ export const actions: Actions = {
 	}
 };
 
-function generateUserId() {
+function getFormValues(formData: FormData): FormValues {
+	const fields = [
+		'fullName',
+		'nik',
+		'birthDate',
+		'whatsapp',
+		'email',
+		'fullAddress',
+		'provinceId',
+		'regencyId',
+		'districtId',
+		'villageId',
+		'activeEducation',
+		'religion',
+		'guardianName',
+		'guardianRelation',
+		'guardianWhatsapp',
+		'referralSource',
+		'programGoal',
+		'hasProgrammingBasics',
+		'usesAiTools'
+	] as const;
+
+	return Object.fromEntries(
+		fields.map((field) => {
+			const value = formData.get(field);
+			return [field, typeof value === 'string' ? value : ''];
+		})
+	);
+}
+
+async function resolveLocation(payload: {
+	provinceId: string;
+	regencyId: string;
+	districtId: string;
+	villageId: string;
+}) {
+	const [provinces, regencies, districts, villages] = await Promise.all([
+		LocationService.getProvinces(),
+		LocationService.getCities(payload.provinceId),
+		LocationService.getDistricts(payload.regencyId),
+		LocationService.getVillages(payload.districtId)
+	]);
+
+	const province = provinces.find((item) => item.id === payload.provinceId);
+	const regency = regencies.find((item) => item.id === payload.regencyId);
+	const district = districts.find((item) => item.id === payload.districtId);
+	const village = villages.find((item) => item.id === payload.villageId);
+
+	return province && regency && district && village
+		? { province, regency, district, village }
+		: null;
+}
+
+function generateId() {
 	const bytes = crypto.getRandomValues(new Uint8Array(15));
 	return encodeBase32LowerCase(bytes);
 }

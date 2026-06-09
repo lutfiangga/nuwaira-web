@@ -5,7 +5,6 @@
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 
-	const brandColor = '#092A77';
 	const brandFavicon = '/images/logo-icon.svg';
 </script>
 
@@ -18,8 +17,6 @@
 	<link rel="icon" href={brandFavicon} type="image/svg+xml" />
 </svelte:head>
 
-<main
-	style="--brand-blue: {brandColor}; --primary: {brandColor}; --ring: {brandColor}; --sidebar-primary: {brandColor}"
->
+<main class="bg-white">
 	{@render children?.()}
 </main>

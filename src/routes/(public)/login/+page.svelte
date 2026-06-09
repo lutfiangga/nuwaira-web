@@ -22,7 +22,7 @@
 <main class="grid min-h-screen bg-slate-950 px-5 py-8 text-white lg:grid-cols-[0.9fr_1.1fr]">
 	<section class="flex flex-col justify-between rounded-lg border border-white/10 bg-white/5 p-6">
 		<a href="/" class="inline-flex w-fit items-center">
-			<img src="/images/logo.svg" alt="Nuwaira Academy" class="h-9 w-auto" />
+			<img src="/images/logo-wt.svg" alt="Nuwaira Academy" class="h-9 w-auto" />
 		</a>
 
 		<div class="max-w-xl py-16">

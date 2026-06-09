@@ -24,10 +24,10 @@
 
 	function getNavClass(active: boolean) {
 		if (active) {
-			return 'rounded-full bg-brand-blue text-black shadow-sm hover:bg-white text-white border border-white';
+			return 'rounded-full bg-brand-30 border border-brand/50';
 		}
 
-		return 'rounded-full bg-transparent text-white/85 hover:bg-white/12 hover:text-white';
+		return 'rounded-full bg-transparent text-brand';
 	}
 
 	$: if ($page.url.pathname) {
@@ -36,7 +36,7 @@
 </script>
 
 <Sheet.Root bind:open={mobileMenuOpen}>
-	<header class="sticky top-0 z-[70] w-full px-5 py-4 sm:px-8 lg:px-16">
+	<header class="sticky top-0 z-70 bg-white w-full px-5 py-4 sm:px-8 lg:px-16">
 		<div class="mx-auto flex h-14 items-center justify-between gap-3">
 			<a href="/" class="inline-flex items-center shrink-0 group">
 				<img
@@ -63,7 +63,7 @@
 				{/each}
 
 				<Button
-					class="rounded-full !bg-white bg-transparent text-black hover:bg-white/10 hover:scale-105 transition-all duration-300 ease-in-out"
+					class="rounded-full bg-brand text-white hover:bg-brand/80 hover:scale-105 transition-all duration-300 ease-in-out"
 					size="lg"
 					href="https://wa.me/6285235353944?text=Halo%20Nuwaira%2C%20saya%20ingin%20bertanya%20tentang%20program%20belajar."
 					target="_blank"
