@@ -68,13 +68,20 @@ const registrationSchema = z
 		villageId: requiredString('Kelurahan/desa wajib dipilih'),
 		activeEducation: requiredString('Pendidikan aktif wajib diisi', 2),
 		religion: requiredString('Agama wajib dipilih'),
+		religionOther: z.string().trim().optional(),
 		guardianName: requiredString('Nama wali wajib diisi', 2),
 		guardianRelation: requiredString('Hubungan dengan wali wajib dipilih'),
+		guardianRelationOther: z.string().trim().optional(),
 		guardianWhatsapp: whatsappSchema('WhatsApp wali wajib diisi'),
 		referralSource: requiredString('Sumber informasi wajib dipilih'),
+		referralSourceOther: z.string().trim().optional(),
 		programGoal: requiredString('Tujuan mengikuti program wajib diisi', 10),
 		hasProgrammingBasics: yesNoSchema('Pilih pengalaman basic programming'),
 		usesAiTools: yesNoSchema('Pilih pengalaman menggunakan tools AI'),
+		agreedToTerms: z.preprocess(
+			(value) => value === 'true',
+			z.literal(true, { message: 'Kamu harus menyetujui pernyataan pendaftaran' })
+		),
 		password: requiredString('Password wajib diisi', 8),
 		confirmPassword: requiredString('Konfirmasi password wajib diisi', 8),
 		cfTurnstileResponse: z.string().optional()
@@ -82,6 +89,18 @@ const registrationSchema = z
 	.refine((value) => value.password === value.confirmPassword, {
 		path: ['confirmPassword'],
 		message: 'Konfirmasi password tidak sama'
+	})
+	.refine((value) => value.religion !== 'Lainnya' || Boolean(value.religionOther), {
+		path: ['religionOther'],
+		message: 'Tuliskan agama'
+	})
+	.refine((value) => value.guardianRelation !== 'Lainnya' || Boolean(value.guardianRelationOther), {
+		path: ['guardianRelationOther'],
+		message: 'Tuliskan hubungan dengan wali'
+	})
+	.refine((value) => value.referralSource !== 'Lainnya' || Boolean(value.referralSourceOther), {
+		path: ['referralSourceOther'],
+		message: 'Tuliskan sumber informasi'
 	});
 
 type FormValues = Record<string, string>;
@@ -102,6 +121,8 @@ export const actions: Actions = {
 		const values = getFormValues(formData);
 		const result = registrationSchema.safeParse({
 			...values,
+			password: formData.get('password'),
+			confirmPassword: formData.get('confirmPassword'),
 			cfTurnstileResponse: formData.get('cf-turnstile-response')
 		});
 
@@ -124,6 +145,16 @@ export const actions: Actions = {
 
 		const payload = result.data;
 		const location = await resolveLocation(payload);
+		const religion =
+			payload.religion === 'Lainnya' ? payload.religionOther?.trim() || '' : payload.religion;
+		const guardianRelation =
+			payload.guardianRelation === 'Lainnya'
+				? payload.guardianRelationOther?.trim() || ''
+				: payload.guardianRelation;
+		const referralSource =
+			payload.referralSource === 'Lainnya'
+				? payload.referralSourceOther?.trim() || ''
+				: payload.referralSource;
 
 		if (!location) {
 			return fail(400, {
@@ -203,14 +234,15 @@ export const actions: Actions = {
 					villageId: location.village.id,
 					villageName: location.village.name,
 					activeEducation: payload.activeEducation,
-					religion: payload.religion,
+					religion,
 					guardianName: payload.guardianName,
-					guardianRelation: payload.guardianRelation,
+					guardianRelation,
 					guardianWhatsapp: payload.guardianWhatsapp,
-					referralSource: payload.referralSource,
+					referralSource,
 					programGoal: payload.programGoal,
 					hasProgrammingBasics: payload.hasProgrammingBasics,
-					usesAiTools: payload.usesAiTools
+					usesAiTools: payload.usesAiTools,
+					status: 'pending'
 				});
 			});
 
@@ -244,13 +276,17 @@ function getFormValues(formData: FormData): FormValues {
 		'villageId',
 		'activeEducation',
 		'religion',
+		'religionOther',
 		'guardianName',
 		'guardianRelation',
+		'guardianRelationOther',
 		'guardianWhatsapp',
 		'referralSource',
+		'referralSourceOther',
 		'programGoal',
 		'hasProgrammingBasics',
-		'usesAiTools'
+		'usesAiTools',
+		'agreedToTerms'
 	] as const;
 
 	return Object.fromEntries(

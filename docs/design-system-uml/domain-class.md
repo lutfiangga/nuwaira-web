@@ -8,12 +8,36 @@ classDiagram
     +role: text
     +name: text?
     +phone: text?
-    +education: text?
-    +motivation: text?
-    +studentType: text
-    +companyName: text?
     +photo: text?
     +passwordHash: text
+  }
+
+  class Student {
+    +id: text
+    +userId: text
+    +fullName: text
+    +nikEncrypted: text
+    +nikHash: text
+    +birthDate: date
+    +whatsapp: text
+    +fullAddress: text
+    +provinceName: text
+    +regencyName: text
+    +districtName: text
+    +villageName: text
+    +activeEducation: text
+    +guardianName: text
+    +programGoal: text
+    +status: StudentStatus
+    +createdAt: timestamp
+    +updatedAt: timestamp
+  }
+
+  class StudentStatus {
+    <<enumeration>>
+    pending
+    accepted
+    rejected
   }
 
   class Session {
@@ -22,13 +46,7 @@ classDiagram
     +expiresAt: timestamp
   }
 
-  class CloudinaryUpload {
-    +folderPrefix: text
-    +folder: text
-    +secureUrl: text
-    +publicId: text?
-  }
-
-  User "1" --> "*" Session : user_id
-  User --> CloudinaryUpload : photo url
+  User "1" --> "0..1" Student : registration
+  User "1" --> "*" Session : sessions
+  Student --> StudentStatus : status
 ```

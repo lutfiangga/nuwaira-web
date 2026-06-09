@@ -2,41 +2,44 @@
 
 ## Maintainability
 
-- Runtime command harus konsisten memakai Bun.
-- Route group harus jelas berdasarkan audience:
-  - public
-  - shared
-  - admin
-- Dashboard shared tidak boleh diduplikasi untuk admin dan student.
-- Docs harus diperbarui ketika scope berubah.
+- Route group harus jelas berdasarkan audience.
+- Logika database berada di service/server module.
+- Combobox dan date picker harus reusable.
+- Docs diperbarui ketika scope, route, schema, atau flow berubah.
 
 ## Reliability
 
-- Register dan login harus tetap menampilkan pesan validasi ramah saat input kosong/null.
-- Session cleanup harus mencegah tabel `session` membengkak.
-- Upload foto opsional tidak boleh menggagalkan register.
+- Insert akun dan student harus berada dalam satu transaction.
+- Perubahan status harus conditional agar request berulang tidak mengubah hasil review.
+- Error external location service harus menghasilkan pesan yang ramah.
+- Debounce timer harus dibersihkan ketika komponen dihancurkan.
 
 ## Security
 
-- Password wajib di-hash dengan Argon2.
-- Cloudinary API secret hanya dibaca dari env private.
-- Admin route wajib mengecek `role === 'admin'`.
-- Student dashboard wajib butuh login.
-- Cookie session harus memakai path `/`.
+- Password menggunakan Argon2.
+- NIK menggunakan AES-256-GCM.
+- Duplicate check dan exact search NIK menggunakan keyed HMAC.
+- Secret database, Cloudinary, Turnstile, dan encryption hanya berasal dari private env.
+- Route admin wajib memverifikasi role `admin`.
+- Password dan NIK plaintext tidak boleh dicatat pada log.
+- `SECRET_KEY` tidak boleh dirotasi tanpa proses re-encryption.
 
-## Storage
+## Privacy
 
-- Foto tidak boleh disimpan ke local server pada flow aktif.
-- Database hanya menyimpan URL foto.
-- Folder Cloudinary harus memakai prefix per environment.
+- Export siswa mengandung data sensitif dan hanya tersedia untuk admin.
+- Export memproses data halaman aktif yang sudah dimuat.
+- Ciphertext NIK tidak boleh diserialisasi ke client.
 
 ## Performance
 
-- Dashboard admin hanya mengambil ringkasan dan daftar siswa terbatas.
-- Tabel users memakai pagination.
+- Tabel admin menggunakan pagination server-side.
+- Search otomatis menggunakan debounce 500 ms.
+- Search NIK hanya dilakukan untuk input exact 16 digit.
+- Data lokasi child dimuat berdasarkan parent.
 
 ## Accessibility
 
-- Form field harus punya label.
-- Password field harus punya toggle show/hide dengan label aksesibel.
-- Alert validasi harus muncul dekat bagian atas form.
+- Semua field memiliki label.
+- Custom combobox dan calendar dapat difokuskan.
+- Checkbox persetujuan terhubung dengan label.
+- Status menggunakan teks selain warna.

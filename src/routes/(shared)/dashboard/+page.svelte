@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import {
 		ArrowUpRight,
 		BarChart3,
@@ -46,7 +47,7 @@
 							</p>
 						</div>
 						<a
-							href="/users"
+							href={resolve('/users')}
 							class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#092A77] px-4 text-sm font-medium text-white hover:bg-slate-800"
 						>
 							Kelola users
@@ -93,7 +94,7 @@
 			</div>
 
 			<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<div class="rounded-lg border bg-white p-5 shadow-sm">
+				<div class="rounded-lg border bg-white p-5">
 					<div class="flex items-center justify-between">
 						<p class="text-sm font-medium text-slate-500">Total Users</p>
 						<UsersRound class="h-5 w-5 text-blue-700" />
@@ -101,7 +102,7 @@
 					<p class="mt-4 text-3xl font-semibold text-slate-950">{admin.summary.totalUsers}</p>
 					<p class="mt-1 text-xs text-slate-500">Semua akun aktif di sistem</p>
 				</div>
-				<div class="rounded-lg border bg-white p-5 shadow-sm">
+				<div class="rounded-lg border bg-white p-5">
 					<div class="flex items-center justify-between">
 						<p class="text-sm font-medium text-slate-500">Siswa</p>
 						<GraduationCap class="h-5 w-5 text-blue-700" />
@@ -109,7 +110,7 @@
 					<p class="mt-4 text-3xl font-semibold text-slate-950">{admin.summary.totalStudents}</p>
 					<p class="mt-1 text-xs text-slate-500">Total pendaftar bootcamp</p>
 				</div>
-				<div class="rounded-lg border bg-white p-5 shadow-sm">
+				<div class="rounded-lg border bg-white p-5">
 					<div class="flex items-center justify-between">
 						<p class="text-sm font-medium text-slate-500">Admin</p>
 						<UserCog class="h-5 w-5 text-blue-700" />
@@ -117,7 +118,7 @@
 					<p class="mt-4 text-3xl font-semibold text-slate-950">{admin.summary.totalAdmins}</p>
 					<p class="mt-1 text-xs text-slate-500">Akun pengelola panel</p>
 				</div>
-				<div class="rounded-lg border bg-white p-5 shadow-sm">
+				<div class="rounded-lg border bg-white p-5">
 					<div class="flex items-center justify-between">
 						<p class="text-sm font-medium text-slate-500">Business</p>
 						<Building2 class="h-5 w-5 text-blue-700" />
@@ -134,7 +135,10 @@
 							<h2 class="font-semibold text-slate-950">Pendaftar Siswa</h2>
 							<p class="text-sm text-slate-500">Data singkat pendaftar bootcamp terbaru.</p>
 						</div>
-						<a href="/users" class="text-sm font-medium text-blue-700 hover:text-blue-800">
+						<a
+							href={resolve('/users')}
+							class="text-sm font-medium text-blue-700 hover:text-blue-800"
+						>
 							Lihat semua
 						</a>
 					</div>
@@ -244,14 +248,14 @@
 						<h2 class="font-semibold text-slate-950">Aksi cepat</h2>
 						<div class="mt-4 grid gap-2">
 							<a
-								href="/users"
+								href={resolve('/users')}
 								class="flex items-center justify-between rounded-md border px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
 							>
 								Kelola user
 								<ArrowUpRight class="h-4 w-4" />
 							</a>
 							<a
-								href="/"
+								href={resolve('/')}
 								class="flex items-center justify-between rounded-md border px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
 							>
 								Lihat landing page

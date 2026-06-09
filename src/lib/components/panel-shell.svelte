@@ -1,22 +1,40 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import { ChevronDown, LayoutDashboard, LogOut, User, Users } from '@lucide/svelte';
+	import {
+		ChevronDown,
+		GraduationCap,
+		LayoutDashboard,
+		LogOut,
+		User,
+		UserRoundPlus,
+		Users
+	} from '@lucide/svelte';
+	import type { Snippet } from 'svelte';
 
 	type PanelRole = 'admin' | 'student';
+	type PanelData = {
+		panelRole?: PanelRole;
+		user?: {
+			role?: string;
+			name?: string | null;
+			email?: string | null;
+		};
+	};
 
-	let { data, children }: { data: any; children: any } = $props();
+	let { data, children }: { data: PanelData; children: Snippet } = $props();
 
 	const adminRoutes = [
 		{ title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+		{ title: 'Calon Siswa', url: '/prospective-students', icon: UserRoundPlus },
+		{ title: 'Siswa', url: '/students', icon: GraduationCap },
 		{ title: 'Users', url: '/users', icon: Users }
-	];
+	] as const;
 
-	const studentRoutes = [
-		{ title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-	];
+	const studentRoutes = [{ title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard }] as const;
 
 	const normalizeRoute = (url: string) =>
 		url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
@@ -74,7 +92,7 @@
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
-							<a href="/logout" class="flex items-center gap-2">
+							<a href={resolve('/logout')} class="flex items-center gap-2">
 								<LogOut class="h-4 w-4" />
 								<span>Logout</span>
 							</a>

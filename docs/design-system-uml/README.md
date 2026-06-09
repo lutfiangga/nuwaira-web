@@ -1,19 +1,19 @@
 # UML Baseline
 
-Diagram di folder ini mengikuti scope Nuwaira Academy saat ini:
+Diagram di folder ini mengikuti scope intake Nuwaira Academy:
 
-- bootcamp registration
+- student registration
 - auth/session
-- Cloudinary upload
+- student intake review
+- sensitive NIK storage
 - shared dashboard
 - admin users
-
-Catatan: diagram dynamic RBAC lama sudah tidak menjadi baseline karena modul RBAC, permission, route permission, dan panel module registry telah dikeluarkan dari scope aktif.
 
 ## Diagrams
 
 - [Domain Class](domain-class.md)
 - [Use Case](use-case.md)
-- [Bootcamp Registration Activity](activity-bootcamp-registration.md)
+- [Student Registration Activity](activity-bootcamp-registration.md)
+- [Student Intake Review Sequence](sequence-student-intake-review.md)
 - [Auth And Shared Dashboard Sequence](sequence-auth-dashboard.md)
 - [Admin User Upload Sequence](sequence-admin-user-upload.md)

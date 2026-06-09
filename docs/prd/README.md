@@ -1,54 +1,55 @@
-# PRD - Nuwaira Academy Bootcamp Intake
+# PRD - Nuwaira Academy Student Intake
 
 ## Vision
 
-Menyediakan funnel pendaftaran bootcamp yang ringan, jelas, dan siap dipakai untuk calon siswa personal maupun business, dengan panel admin untuk memantau pendaftar.
+Menyediakan funnel pendaftaran siswa yang jelas, aman untuk data sensitif, dan mudah direview admin sebelum pendaftar menjadi siswa aktif.
 
 ## Product Objectives
 
-- Calon siswa bisa daftar akun bootcamp dari landing page.
-- Siswa langsung masuk ke dashboard setelah register.
-- Admin bisa login dan melihat ringkasan intake.
-- Admin bisa mengelola user dasar.
-- Foto profil disimpan di Cloudinary.
-- Runtime development menggunakan Bun.
+- Visitor dapat mendaftar melalui form lengkap yang ramah perangkat mobile.
+- Domisili menggunakan data wilayah Indonesia yang konsisten.
+- NIK tidak pernah disimpan sebagai plaintext.
+- Pendaftaran baru masuk sebagai calon siswa berstatus `pending`.
+- Admin dapat menerima atau menolak calon siswa.
+- Admin dapat mencari, melihat detail, dan mengelola user.
+- Student tetap dapat login dan membuka dashboard akun setelah registrasi.
 
 ## Primary Users
 
-- Visitor: melihat landing page dan masuk ke form pendaftaran.
-- Student personal: mendaftar untuk kebutuhan individu.
-- Student business: mendaftar untuk kebutuhan perusahaan/tim dan wajib mengisi company name.
-- Admin: melihat dashboard operasional dan mengelola users.
+- Visitor: melihat landing page dan mengisi form pendaftaran.
+- Calon siswa: akun student dengan intake `pending`.
+- Siswa: pendaftar dengan intake `accepted`.
+- Admin: mereview intake dan mengelola user.
 
 ## In Scope
 
 - Landing page.
-- Register bootcamp dua step.
-- Login email/password.
-- Logout.
+- Form pendaftaran siswa.
+- Login dan logout.
 - Dashboard shared `/dashboard`.
-- Admin users page.
-- Cloudinary upload untuk foto.
-- Session cleanup.
-- Seeder admin.
+- Admin `/students`, `/prospective-students`, dan `/users`.
+- Approval status `pending`, `accepted`, dan `rejected`.
+- Enkripsi dan pencarian aman untuk NIK.
+- Integrasi Emsifa, Turnstile, dan Cloudinary.
 
 ## Out of Scope
 
-- Role permission CRUD.
-- Panel module registry.
-- Route permission registry.
-- LMS class/material/enrollment workflow.
+- LMS class/material/enrollment.
 - Payment.
 - Attendance.
 - Certificate.
+- Admin review notes.
+- Halaman khusus untuk riwayat pendaftar rejected.
 
 ## Success Criteria
 
-- Register tanpa foto tetap berhasil.
-- Register dengan foto menyimpan URL Cloudinary.
-- Jalur business wajib mengisi company name.
-- Pendidikan `Lainnya` menyimpan value custom.
-- Admin dan student diarahkan ke `/dashboard` dengan tampilan sesuai role.
+- Form gagal dengan pesan yang spesifik jika data wajib belum lengkap.
+- Hierarki lokasi diverifikasi kembali oleh server.
+- Registrasi baru selalu tersimpan sebagai `pending`.
+- Pendaftar accepted hanya tampil di `/students`.
+- Pendaftar pending hanya tampil di `/prospective-students`.
+- NIK dapat didekripsi untuk view berizin tanpa disimpan plaintext.
+- Admin dapat menerima atau menolak calon siswa dari daftar maupun detail.
 
 ## Related Documents
 

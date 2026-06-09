@@ -4,69 +4,74 @@
 
 - Visitor dapat membuka landing page.
 - CTA pendaftaran mengarah ke `/register`.
+- Navbar tetap terlihat ketika halaman di-scroll.
 
-## FR-002 Register Bootcamp
+## FR-002 Student Registration
 
-- Form register terdiri dari dua step.
-- Step 1 wajib berisi:
-  - nama
-  - student type: personal atau business
-  - pendidikan
-  - motivasi
-  - no HP
-- Step 2 wajib berisi:
-  - email
-  - password
-  - konfirmasi password
-- Foto profil opsional.
-- Jika pendidikan `Lainnya`, sistem wajib menampilkan input custom.
-- Jika student type `business`, company name wajib diisi.
-- Jika student type `personal`, company name tidak wajib dan tidak disimpan.
+- Form wajib mengumpulkan identitas, kontak, domisili, pendidikan, data wali, informasi program, dan kredensial akun.
+- NIK harus 16 digit.
+- Opsi `Lainnya` wajib membuka input custom.
+- Form wajib memiliki tombol kembali.
+- User wajib mencentang pernyataan persetujuan.
+- Turnstile wajib valid sebelum data disimpan.
 
-## FR-003 Register Validation
+## FR-003 Location Selection
 
-- Frontend harus menampilkan alert di atas form jika submit/next dilakukan saat data belum lengkap.
-- Setiap field harus punya pesan error yang spesifik.
-- Error tidak boleh memakai pesan mentah seperti `Invalid input: expected string, received null`.
-- Value form tidak boleh hilang ketika user pindah step.
+- Combobox lokasi harus mendukung pencarian.
+- Urutan pilihan: provinsi, kabupaten/kota, kecamatan, kelurahan/desa.
+- Pilihan child harus direset ketika parent berubah.
+- Server wajib memverifikasi kembali hierarki lokasi melalui Emsifa.
 
-## FR-004 Photo Upload
+## FR-004 Registration Validation
 
-- Foto register dikompres dan dikonversi ke WebP di browser sebelum submit.
-- Server hanya upload foto jika file tersedia.
-- Foto user/admin upload harus disimpan di Cloudinary.
-- Database menyimpan URL Cloudinary di kolom `user.photo`.
-- Local upload directory tidak boleh dipakai untuk flow aktif.
+- NIK dan email harus unik.
+- Tanggal lahir tidak boleh berada di masa depan.
+- Password minimal delapan karakter dan konfirmasi harus sama.
+- Error field harus spesifik dan value non-password dipertahankan setelah gagal.
+- Password tidak boleh dikirim kembali pada response form error.
 
-## FR-005 Login
+## FR-005 Sensitive NIK
 
-- Login memakai email dan password.
-- Username tidak dipakai.
+- NIK dienkripsi sebelum insert.
+- Exact search NIK menggunakan HMAC index.
+- NIK hanya didekripsi di server untuk view berizin.
+- Kegagalan `SECRET_KEY` harus menggagalkan registrasi tanpa data parsial.
+
+## FR-006 Intake Status
+
+- Registrasi baru berstatus `pending`.
+- `/prospective-students` hanya menampilkan status `pending`.
+- `/students` hanya menampilkan status `accepted`.
+- Admin dapat menerima calon siswa menjadi `accepted`.
+- Admin dapat menolak calon siswa menjadi `rejected`.
+- Perubahan status hanya berhasil jika status sebelumnya masih `pending`.
+- Status harus tampil pada daftar dan detail.
+
+## FR-007 Student Administration
+
+- Daftar siswa dan calon siswa mendukung search server-side dengan debounce 500 ms.
+- Kedua daftar mendukung pagination.
+- Kedua daftar mendukung export CSV, Excel, dan PDF untuk halaman aktif.
+- Kedua daftar mendukung hide/show columns.
+- Kolom aksi harus selalu terlihat.
+- Calon siswa menyediakan aksi Terima dan Tolak.
+
+## FR-008 User Administration
+
+- Admin dapat membuat, mengubah, menghapus, dan bulk delete user.
+- Daftar user mendukung search debounce, pagination, export, dan hide/show columns.
+
+## FR-009 Authentication
+
+- Login menggunakan email dan password.
 - Admin dan student diarahkan ke `/dashboard`.
-- Tampilan dashboard mengikuti role user.
+- Tampilan dashboard mengikuti role akun.
+- Login baru menghapus session lama user yang sama.
+- Logout menghapus session aktif.
 
-## FR-006 Session Management
+## FR-010 Seed
 
-- Login baru harus menghapus session lama user yang sama.
-- Logout harus menghapus session user dari tabel `session`.
-- Session expired harus dibersihkan saat validasi token.
-
-## FR-007 Admin Panel
-
-- Admin dapat membuka dashboard operasional.
-- Admin dapat membuka halaman `/users`.
-- Admin dapat membuat, mengubah, dan menghapus user dasar.
-- Admin panel memakai sidebar.
-
-## FR-008 Student Panel
-
-- Student dapat membuka dashboard profil pendaftaran.
-- Student panel memakai sidebar.
-
-## FR-009 Seed
-
-- Seeder hanya membuat admin awal.
-- Seed default:
+- Seeder menyediakan admin awal:
   - email: `admin@nuwaira.id`
   - password: `password`
   - role: `admin`

@@ -1,23 +1,21 @@
-# Activity - Bootcamp Registration
+# Activity - Student Registration
 
 ```mermaid
 flowchart TD
-  A["Open /register"] --> B["Fill profile step"]
-  B --> C{"Education = Lainnya?"}
-  C -->|"Yes"| D["Fill custom education"]
-  C -->|"No"| E["Continue"]
-  D --> E
-  E --> F{"Type = business?"}
-  F -->|"Yes"| G["Fill company name"]
-  F -->|"No"| H["Continue"]
-  G --> H
-  H --> I["Fill email and password"]
-  I --> J{"Photo selected?"}
-  J -->|"Yes"| K["Compress and convert to WebP"]
-  J -->|"No"| L["Submit without photo"]
-  K --> M["Upload to Cloudinary"]
-  L --> N["Create user"]
-  M --> N
+  A["Open /register"] --> B["Fill identity and contact"]
+  B --> C["Select province to village"]
+  C --> D["Fill guardian and program data"]
+  D --> E{"Select Lainnya?"}
+  E -->|"Yes"| F["Fill custom value"]
+  E -->|"No"| G["Continue"]
+  F --> G
+  G --> H["Fill password and agreement"]
+  H --> I["Complete Turnstile"]
+  I --> J["Submit form"]
+  J --> K["Validate fields and location hierarchy"]
+  K --> L["Encrypt NIK and create HMAC index"]
+  L --> M["Create user and student in transaction"]
+  M --> N["Set student status pending"]
   N --> O["Create session"]
   O --> P["Redirect /dashboard"]
 ```

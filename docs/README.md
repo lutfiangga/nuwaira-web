@@ -1,30 +1,46 @@
 # Nuwaira Academy Documentation
 
-Dokumen ini adalah source of truth untuk scope aplikasi saat ini.
+Folder ini menjadi source of truth untuk scope produk dan kontrak implementasi.
 
-## Folder
+## Struktur
 
-- `docs/prd`: arah produk, status implementasi, roadmap.
-- `docs/srs`: requirement fungsional, non-fungsional, dan kontrak implementasi.
+- `docs/prd`: tujuan produk, status implementasi, dan roadmap.
+- `docs/srs`: requirement fungsional, non-fungsional, dan kontrak modul.
 - `docs/design-system-uml`: diagram domain, use case, activity, dan sequence.
 
-## Current Architecture
+## Arsitektur Aktif
 
-- Runtime dan command menggunakan Bun.
-- SvelteKit route group:
-  - `(public)` untuk landing/auth/register.
-  - `(shared)` untuk `/dashboard` yang dipakai admin dan student.
-  - `(admin)` untuk halaman admin-only.
-- Auth memakai session table dan cookie `auth-session`.
-- Upload image wajib melalui Cloudinary.
+- Runtime dan package manager: Bun.
+- Framework: SvelteKit 2 dengan Svelte 5.
+- Database: PostgreSQL melalui Drizzle ORM dan migration SQL.
+- Route groups:
+  - `(public)` untuk landing, register, login, dan logout.
+  - `(shared)` untuk dashboard role-aware.
+  - `(admin)` untuk siswa, calon siswa, dan manajemen user.
+- Auth menggunakan Argon2, tabel `session`, dan cookie `auth-session`.
+- Data lokasi Indonesia berasal dari Emsifa melalui proxy `/api/locations`.
+- NIK dienkripsi AES-256-GCM dengan key turunan dari `SECRET_KEY`.
+- Intake student menggunakan status `pending`, `accepted`, dan `rejected`.
 
-## Maintenance Rule
+## Aturan Maintenance
 
-- Jika route, schema, atau flow register/login berubah, update README dan docs terkait.
-- Setelah schema berubah, jalankan `bun run db:push`.
-- Setelah code berubah, jalankan `bun run check`; untuk perubahan route/layout, jalankan `bun run build`.
+- Perubahan flow, route, schema, atau keamanan wajib memperbarui docs terkait.
+- Setelah perubahan schema:
 
-## Document Index
+```bash
+bun run db:generate
+bun run db:migrate
+```
+
+- Setelah perubahan kode:
+
+```bash
+bun run check
+bun run lint
+bun run build
+```
+
+## Indeks
 
 - [Product Requirements](prd/README.md)
 - [Implementation Status](prd/implementation-status.md)
@@ -34,3 +50,7 @@ Dokumen ini adalah source of truth untuk scope aplikasi saat ini.
 - [Non Functional Requirements](srs/non-functional-requirements.md)
 - [Module Contract](srs/module-contract.md)
 - [UML Baseline](design-system-uml/README.md)
+
+## Komponen Reusable
+
+- `$lib/components/custom-table/data-table.svelte` — Komponen tabel seragam untuk semua halaman admin (`/users`, `/students`, `/prospective-students`). Mendukung gradient header, search, export, column visibility, selection, pagination server-side, dan custom cell rendering via snippet. Tidak menggunakan shadow.

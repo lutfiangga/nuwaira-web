@@ -89,11 +89,11 @@
 	 <!-- Stats Card -->
 		<div class="relative md:col-span-4 order-1">
 			<div
-				class="pointer-events-none absolute inset-y-5 -right-4 z-0 w-6 rounded-r-3xl bg-[#164DC7] md:rounded-r-4xl"
+				class="pointer-events-none absolute inset-y-5 right-0 z-0 w-12 rounded-r-3xl bg-[#164DC7] md:rounded-r-4xl"
 				aria-hidden="true"
 			></div>
 			<article
-				class="bg-brand relative z-10 flex h-full min-h-96 flex-col justify-between rounded-3xl p-6 text-white md:rounded-4xl"
+				class="bg-brand relative w-[95%] z-10 flex h-full min-h-96 flex-col justify-between rounded-3xl p-6 text-white md:rounded-4xl"
 			>
 				<div class="flex items-start justify-between">
 					<p class="text-xs font-medium uppercase tracking-wide text-white/80">Statistik</p>
@@ -161,7 +161,7 @@
 				</div>
 				<div class="flex h-14 items-center justify-center rounded-xl bg-white font-semibold">AWS</div>
 				<div class="flex h-14 items-center justify-center rounded-xl bg-white font-semibold">
-					Dicoding
+				Cloudflared
 				</div>
 			</div>
 		</article>

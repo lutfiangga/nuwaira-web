@@ -3,18 +3,20 @@
 ```mermaid
 flowchart LR
   Visitor["Visitor"]
-  Student["Student"]
+  Student["Student Account"]
   Admin["Admin"]
 
   Visitor -->|"View"| Landing["Landing Page"]
-  Visitor -->|"Register"| Register["Bootcamp Registration"]
+  Visitor -->|"Register"| Register["Student Registration"]
   Visitor -->|"Login"| Login["Login"]
 
-  Register -->|"Create account"| StudentDashboard["Student Dashboard"]
-  Login -->|"student role"| StudentDashboard
-  Login -->|"admin role"| AdminDashboard["Admin Dashboard"]
+  Register -->|"Create pending intake"| Dashboard["Shared Dashboard"]
+  Login --> Dashboard
 
-  Admin --> AdminDashboard
+  Admin --> AdminDashboard["Admin Dashboard"]
+  Admin --> Prospects["Review Prospective Students"]
+  Admin --> Students["View Accepted Students"]
   Admin --> Users["Manage Users"]
-  Student --> StudentDashboard
+  Prospects -->|"Accept or reject"| Students
+  Student --> Dashboard
 ```

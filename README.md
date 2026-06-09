@@ -1,65 +1,76 @@
 # Nuwaira Academy
 
-Web app SvelteKit untuk landing page Nuwaira Academy, pendaftaran siswa bootcamp, login, dan panel sederhana untuk admin serta siswa.
+Aplikasi SvelteKit untuk landing page Nuwaira Academy, pendaftaran calon siswa, autentikasi, dan panel administrasi intake.
 
 ## Stack
 
 - Bun
-- SvelteKit 2 + Svelte 5
+- SvelteKit 2 dan Svelte 5
 - TypeScript
-- Drizzle ORM + PostgreSQL
-- Tailwind CSS + shadcn-svelte style components
-- Cloudinary untuk upload foto
+- Drizzle ORM dan PostgreSQL
+- Tailwind CSS dan komponen berbasis shadcn-svelte
+- Cloudflare Turnstile
+- Cloudinary untuk foto user
+- Emsifa API Wilayah Indonesia
 
-## Current Scope
+## Fitur Utama
 
-- Landing page publik.
-- Register siswa bootcamp dua step:
-  - Step 1: nama, jalur personal/business, pendidikan, motivasi, no HP.
-  - Step 2: email, password, konfirmasi password, foto opsional.
-- Pendidikan `Lainnya` membuka input custom.
-- `companyName` hanya wajib untuk jalur business.
-- Foto pendaftaran dikompres dan dikonversi ke WebP di browser sebelum upload.
-- Foto disimpan ke Cloudinary, bukan local server.
-- Login menggunakan email + password.
-- Dashboard shared di `/dashboard`:
-  - admin melihat dashboard operasional.
-  - student melihat dashboard profil pendaftaran.
-- Admin panel:
-  - dashboard
-  - users
-- Session cleanup:
-  - login baru menghapus session lama user yang sama.
-  - logout menghapus session aktif dari tabel `session`.
+- Landing page publik dengan navbar sticky, carousel, program, dan testimonial.
+- Form pendaftaran modern dengan:
+  - searchable combobox reusable
+  - custom calendar
+  - provinsi, kabupaten/kota, kecamatan, dan kelurahan dari Emsifa
+  - input custom ketika memilih `Lainnya`
+  - persetujuan wajib dan Cloudflare Turnstile
+- NIK dienkripsi menggunakan AES-256-GCM dan hanya didekripsi pada server.
+- Pencarian NIK menggunakan HMAC index, bukan plaintext.
+- Workflow pendaftaran:
+  - registrasi baru berstatus `pending`
+  - admin menerima pendaftar menjadi `accepted`
+  - admin dapat menolak pendaftar menjadi `rejected`
+- Panel admin:
+  - `/dashboard`
+  - `/students` untuk siswa `accepted`, export, dan hide/show columns
+  - `/prospective-students` untuk calon siswa `pending`, approval, export, dan hide/show columns
+  - `/users` untuk CRUD user, export, bulk delete, dan hide/show columns
+- Search daftar admin menggunakan debounce 500 ms dan pagination server-side.
+- Dashboard shared di `/dashboard` untuk admin dan student.
 
 ## Route Groups
 
-- `src/routes/(public)`: landing, register, login, logout.
-- `src/routes/(shared)`: dashboard yang dipakai admin dan student.
-- `src/routes/(admin)`: halaman admin-only seperti `/users`.
+- `src/routes/(public)`: landing, register, login, dan logout.
+- `src/routes/(shared)`: dashboard role-aware.
+- `src/routes/(admin)`: dashboard admin, siswa, calon siswa, dan users.
 
 ## Environment
 
-Copy `.env.example` ke `.env`, lalu isi:
+Salin `.env.example` menjadi `.env`, lalu isi:
 
 ```bash
 DATABASE_URL="postgres://user:password@host:port/db-name"
+
 CLOUDINARY_CLOUD_NAME=xxx
 CLOUDINARY_API_KEY=xxx
 CLOUDINARY_API_SECRET=xxx
 CLOUDINARY_FOLDER_PREFIX=nuwaira
+
+PUBLIC_TURNSTILE_SITE_KEY=xxx
+TURNSTILE_SECRET_KEY=xxx
+
+SECRET_KEY=replace-with-a-long-random-secret-key
 ```
 
-`CLOUDINARY_FOLDER_PREFIX` dipakai sebagai prefix folder upload. Contoh hasil folder:
+`SECRET_KEY` wajib minimal 32 karakter. Gunakan nilai random yang stabil karena perubahan key membuat NIK lama tidak dapat didekripsi.
 
-- `nuwaira/bootcamp-students`
-- `nuwaira/users`
+```bash
+openssl rand -base64 48
+```
 
 ## Development
 
 ```bash
 bun install
-bun run db:push
+bun run db:migrate
 bun run db:seed
 bun run dev
 ```
@@ -70,40 +81,35 @@ Default seed admin:
 - Password: `password`
 - Role: `admin`
 
+## Database
+
+Tabel aktif:
+
+- `user`: akun, role, profil dasar, dan password hash.
+- `session`: session autentikasi.
+- `students`: data pendaftaran, domisili, wali, NIK terenkripsi, dan status intake.
+
+Status student:
+
+- `pending`: calon siswa menunggu review.
+- `accepted`: siswa diterima dan tampil di `/students`.
+- `rejected`: pendaftaran ditolak dan tetap tersimpan sebagai riwayat.
+
+Setelah mengubah schema:
+
+```bash
+bun run db:generate
+bun run db:migrate
+```
+
 ## Verification
 
 ```bash
 bun run check
+bun run lint
 bun run build
-```
-
-## Database Notes
-
-Schema aktif saat ini hanya fokus pada:
-
-- `user`
-- `session`
-
-Kolom penting `user`:
-
-- `id`
-- `email`
-- `role`
-- `name`
-- `phone`
-- `education`
-- `motivation`
-- `student_type`
-- `company_name`
-- `photo`
-- `password_hash`
-
-Setelah perubahan schema, jalankan:
-
-```bash
-bun run db:push
 ```
 
 ## Docs
 
-Dokumentasi project ada di [docs](docs/README.md).
+Dokumentasi produk, requirement, kontrak teknis, dan diagram tersedia di [docs](docs/README.md).

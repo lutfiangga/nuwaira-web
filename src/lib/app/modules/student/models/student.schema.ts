@@ -1,5 +1,7 @@
-import { boolean, date, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, date, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { user } from '../../user/models/user.schema';
+
+export const studentStatusEnum = pgEnum('student_status', ['pending', 'accepted', 'rejected']);
 
 export const student = pgTable('students', {
 	id: text('id').primaryKey(),
@@ -31,9 +33,11 @@ export const student = pgTable('students', {
 	programGoal: text('program_goal').notNull(),
 	hasProgrammingBasics: boolean('has_programming_basics').notNull().default(false),
 	usesAiTools: boolean('uses_ai_tools').notNull().default(false),
+	status: studentStatusEnum('status').notNull().default('pending'),
 	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 }).enableRLS();
 
 export type Student = typeof student.$inferSelect;
 export type NewStudent = typeof student.$inferInsert;
+export type StudentStatus = (typeof studentStatusEnum.enumValues)[number];

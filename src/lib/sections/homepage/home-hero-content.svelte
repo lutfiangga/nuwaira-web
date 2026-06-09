@@ -5,7 +5,7 @@
 
 <div class="w-full flex-1 flex flex-col max-w-7xl mx-auto items-center justify-center px-6 md:px-4 space-y-6">
 	<div class="w-full max-w-5xl flex flex-col items-center text-center gap-6 px-6">
-		<Badge class="font-semibold text-base bg-brand">
+		<Badge class="text-base bg-brand h-12 px-6">
 			Sekolah Coding & AI di Yogyakarta
 		</Badge>
 

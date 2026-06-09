@@ -2,39 +2,57 @@
 
 ## System Context
 
-- Public app: landing, register, login, logout.
+- Public app: landing, register, login, dan logout.
 - Shared panel: `/dashboard`, role-aware untuk admin dan student.
-- Admin app: `/users`.
-- Service layer: user/auth/cloudinary.
-- Data layer: PostgreSQL + Drizzle.
+- Admin app: `/students`, `/prospective-students`, dan `/users`.
+- Service layer: auth, user, student, location, encryption, Cloudinary, dan Turnstile.
+- Data layer: PostgreSQL dan Drizzle ORM.
 
 ## Runtime
 
-- Semua command development memakai Bun.
-- Script utama:
-  - `bun run dev`
-  - `bun run check`
-  - `bun run build`
-  - `bun run db:push`
-  - `bun run db:seed`
+Command utama menggunakan Bun:
+
+```bash
+bun run dev
+bun run check
+bun run lint
+bun run build
+bun run db:generate
+bun run db:migrate
+bun run db:seed
+```
 
 ## Auth Contract
 
-- Login memakai email dan password.
-- Password hash memakai Argon2.
-- Session disimpan di tabel `session`.
-- Cookie session memakai `auth-session`.
-- Saat login, session lama user yang sama dihapus sebelum session baru dibuat.
-- Saat logout, session user aktif dihapus dari tabel `session`.
+- Login menggunakan email dan password.
+- Password di-hash dengan Argon2.
+- Session disimpan di tabel `session` dan cookie `auth-session`.
+- Login baru menghapus session lama user yang sama.
+- Logout menghapus session aktif.
 
-## Upload Contract
+## Student Intake Contract
 
-- Foto tidak boleh disimpan ke local server.
-- Upload foto harus memakai Cloudinary.
-- Folder Cloudinary harus menggunakan `CLOUDINARY_FOLDER_PREFIX`.
+- Registrasi membuat akun dengan role `student`.
+- Lifecycle pendaftaran disimpan terpisah di `students.status`.
+- Status valid: `pending`, `accepted`, dan `rejected`.
+- Registrasi baru wajib berstatus `pending`.
+- Hanya admin yang dapat mengubah status intake.
+
+## Sensitive Data Contract
+
+- NIK plaintext tidak boleh disimpan ke database.
+- `students.nik_encrypted` menyimpan payload AES-256-GCM.
+- `students.nik_hash` menyimpan HMAC SHA-256 untuk duplicate check dan exact search.
+- `SECRET_KEY` wajib private, minimal 32 karakter, dan stabil antar-deployment.
+
+## External Services
+
+- Emsifa: data provinsi sampai kelurahan/desa.
+- Cloudflare Turnstile: validasi anti-bot form register.
+- Cloudinary: upload foto user pada flow admin.
 
 ## Delivery Rule
 
-- Perubahan requirement wajib update docs.
-- Perubahan schema wajib diikuti `bun run db:push`.
-- Perubahan route/layout wajib diverifikasi dengan `bun run check` dan `bun run build`.
+- Perubahan requirement wajib memperbarui docs.
+- Perubahan schema wajib menghasilkan dan menjalankan migration.
+- Perubahan route/layout wajib lolos check, lint, dan build.

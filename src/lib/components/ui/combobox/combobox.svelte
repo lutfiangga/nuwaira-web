@@ -10,14 +10,26 @@
 	let {
 		items = [],
 		placeholder = 'Select...',
+		searchPlaceholder = 'Search...',
+		emptyText = 'No results found.',
 		value = $bindable(''),
 		disabled = false,
-		onSelect = (selectedValue: string) => {}
+		loading = false,
+		invalid = false,
+		class: className,
+		contentClass,
+		onSelect = () => {}
 	}: {
-		items: Array<{ value: string; label: string }>;
+		items: readonly { value: string; label: string }[];
 		placeholder?: string;
+		searchPlaceholder?: string;
+		emptyText?: string;
 		value?: string;
 		disabled?: boolean;
+		loading?: boolean;
+		invalid?: boolean;
+		class?: string;
+		contentClass?: string;
 		onSelect?: (value: string) => void;
 	} = $props();
 
@@ -45,26 +57,40 @@
 		{#snippet child({ props })}
 			<Button
 				variant="outline"
-				class="w-full justify-between"
+				class={cn(
+					'h-12 w-full justify-between rounded-xl border-slate-200 bg-white px-4 text-left font-normal shadow-none hover:bg-slate-50',
+					!selectedValue && 'text-slate-400',
+					invalid && 'border-red-400 ring-2 ring-red-100',
+					className
+				)}
 				{...props}
 				role="combobox"
 				aria-expanded={open}
-				{disabled}
+				aria-invalid={invalid}
+				disabled={disabled || loading}
 			>
-				{selectedValue || placeholder}
-				<ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" />
+				<span class="truncate">{loading ? 'Loading...' : selectedValue || placeholder}</span>
+				<ChevronsUpDownIcon class="ms-2 size-4 shrink-0 text-slate-400" />
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content class="w-[200px] p-0">
+	<Popover.Content
+		align="start"
+		class={cn(
+			'w-[var(--bits-popover-anchor-width)] min-w-[260px] overflow-hidden rounded-xl border-slate-200 p-0 shadow-xl',
+			contentClass
+		)}
+	>
 		<Command.Root>
-			<Command.Input {placeholder} />
-			<Command.List>
-				<Command.Empty>No results found.</Command.Empty>
+			<Command.Input placeholder={searchPlaceholder} />
+			<Command.List class="max-h-64 p-1">
+				<Command.Empty class="py-8 text-center text-sm text-slate-500">{emptyText}</Command.Empty>
 				<Command.Group>
-					{#each items as item}
+					{#each items as item (item.value)}
 						<Command.Item
 							value={item.value}
+							keywords={[item.label]}
+							class="rounded-lg px-3 py-2.5"
 							onSelect={() => {
 								handleSelect(item.value);
 							}}

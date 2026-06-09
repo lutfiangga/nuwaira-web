@@ -2,37 +2,42 @@
 
 ## Phase 1 - Intake Foundation
 
-- Landing page.
-- Register bootcamp.
-- Login/logout.
-- Admin dashboard.
-- Student dashboard.
-- Users admin page.
-- Cloudinary upload.
+Selesai:
 
-## Phase 2 - Student Profile Completion
+- Landing page.
+- Register lengkap.
+- Login/logout.
+- Admin dan student dashboard.
+- Siswa/calon siswa.
+- Approval intake.
+- Users admin.
+
+## Phase 2 - Intake Operations
+
+- Halaman riwayat pendaftar rejected.
+- Admin review notes dan audit status.
+- Bulk accept/reject.
+- Export data siswa dan calon siswa.
+- Notifikasi hasil review.
+- Pembatasan fitur student selama status masih pending.
+
+## Phase 3 - Student Profile
 
 - Editable student profile.
-- Intake status.
-- Admin review notes.
-- Export pendaftar.
+- Upload foto student.
+- Riwayat perubahan data.
+- Pengaturan privasi data sensitif.
 
-## Phase 3 - Bootcamp Operations
+## Phase 4 - Bootcamp Operations
 
-- Bootcamp batch.
-- Enrollment assignment.
+- Batch dan enrollment.
 - Schedule/session.
 - Attendance.
+- Certificate.
 
-## Phase 4 - Learning Experience
+## Phase 5 - Learning Experience
 
-- Student class dashboard.
+- Class dashboard.
 - Materials.
 - Progress tracking.
 - Assignment submission.
-
-## Phase 5 - Business Training
-
-- Company/team profile.
-- Team member import.
-- Business cohort reporting.

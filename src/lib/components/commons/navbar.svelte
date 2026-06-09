@@ -85,7 +85,7 @@
 	<Sheet.Content
 		side="top"
 		style={`top: ${MOBILE_HEADER_OFFSET}px; max-height: calc(100svh - ${MOBILE_HEADER_OFFSET}px);`}
-		class="md:hidden z-[55] overflow-y-auto border-white/15 bg-transparent backdrop-blur-sm px-5 pt-5 pb-6 sm:px-8"
+		class="md:hidden z-55 overflow-y-auto border-white/15 bg-transparent backdrop-blur-sm px-5 pt-5 pb-6 sm:px-8"
 	>
 		<Sheet.Header class="sr-only">
 			<Sheet.Title>Menu Navigasi</Sheet.Title>
