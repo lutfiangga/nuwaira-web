@@ -166,9 +166,6 @@
 												</div>
 												<div class="min-w-0">
 													<p class="truncate font-medium text-slate-900">{item.name ?? '-'}</p>
-													{#if item.companyName}
-														<p class="mt-0.5 truncate text-xs text-slate-500">{item.companyName}</p>
-													{/if}
 												</div>
 											</div>
 										</td>
@@ -196,7 +193,7 @@
 												{item.studentType === 'business' ? 'Business' : 'Personal'}
 											</span>
 										</td>
-										<td class="px-5 py-4 text-slate-600">{item.education ?? '-'}</td>
+										<td class="px-5 py-4 text-slate-600">{item.activeEducation ?? '-'}</td>
 									</tr>
 								{:else}
 									<tr>
@@ -300,13 +297,10 @@
 				<div class="rounded-lg border bg-white p-5">
 					<p class="text-sm text-slate-500">Jalur</p>
 					<p class="mt-2 text-lg font-semibold">{typeLabel}</p>
-					{#if student.companyName}
-						<p class="mt-1 text-sm text-slate-500">{student.companyName}</p>
-					{/if}
 				</div>
 				<div class="rounded-lg border bg-white p-5">
 					<p class="text-sm text-slate-500">Pendidikan</p>
-					<p class="mt-2 text-lg font-semibold">{student.education}</p>
+					<p class="mt-2 text-lg font-semibold">{student.activeEducation}</p>
 				</div>
 				<div class="rounded-lg border bg-white p-5">
 					<p class="text-sm text-slate-500">No HP</p>
@@ -316,7 +310,7 @@
 
 			<div class="mt-4 rounded-lg border bg-white p-5">
 				<p class="text-sm text-slate-500">Motivasi</p>
-				<p class="mt-3 leading-7 text-slate-700">{student.motivation}</p>
+				<p class="mt-3 leading-7 text-slate-700">{student.programGoal}</p>
 			</div>
 		</section>
 	{/if}

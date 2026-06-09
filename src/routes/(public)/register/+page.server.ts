@@ -207,10 +207,7 @@ export const actions: Actions = {
 					role: 'student',
 					name: payload.fullName,
 					phone: payload.whatsapp,
-					education: payload.activeEducation,
-					motivation: payload.programGoal,
 					studentType: 'personal',
-					companyName: null,
 					photo: null,
 					passwordHash
 				});

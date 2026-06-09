@@ -53,10 +53,7 @@ const authenticationHandle: Handle = async ({ event, resolve }) => {
 					name: userTable.name,
 					photo: userTable.photo,
 					phone: userTable.phone,
-					education: userTable.education,
-					motivation: userTable.motivation,
-					studentType: userTable.studentType,
-					companyName: userTable.companyName
+					studentType: userTable.studentType
 				})
 				.from(userTable)
 				.where(eq(userTable.id, user.id))

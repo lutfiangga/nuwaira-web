@@ -8,10 +8,7 @@ declare global {
 				name?: string | null;
 				photo?: string | null;
 				phone?: string | null;
-				education?: string | null;
-				motivation?: string | null;
 				studentType?: string | null;
-				companyName?: string | null;
 			} | null;
 			session: import('$lib/app/modules/user/models/user.schema').Session | null;
 		}

@@ -3,13 +3,10 @@ import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	email: text('email').notNull().unique(),
-	role: text('role').notNull().default('admin'),
+	role: text('role').notNull().default('student'),
 	name: text('name'),
 	phone: text('phone'),
-	education: text('education'),
-	motivation: text('motivation'),
 	studentType: text('student_type').notNull().default('personal'),
-	companyName: text('company_name'),
 	photo: text('photo'),
 	passwordHash: text('password_hash').notNull()
 }).enableRLS();

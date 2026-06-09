@@ -17,11 +17,10 @@ export const load: PageServerLoad = async (event) => {
 			email: user.email,
 			role: user.role,
 			phone: user.phone,
-			education: user.education,
-			motivation: user.motivation,
 			studentType: user.studentType,
-			companyName: user.companyName,
 			photo: user.photo,
+			activeEducation: studentTable.activeEducation,
+			programGoal: studentTable.programGoal,
 			nikEncrypted: studentTable.nikEncrypted
 		})
 		.from(user)
@@ -56,9 +55,8 @@ export const load: PageServerLoad = async (event) => {
 				name: user.name,
 				email: user.email,
 				phone: user.phone,
-				education: user.education,
 				studentType: user.studentType,
-				companyName: user.companyName,
+				activeEducation: studentTable.activeEducation,
 				nikEncrypted: studentTable.nikEncrypted
 			})
 			.from(user)

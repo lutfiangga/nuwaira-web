@@ -13,6 +13,5 @@ export const userExportColumns: DataTableColumn[] = [
 	{ accessorKey: 'name', label: 'Name' },
 	{ accessorKey: 'email', label: 'Email' },
 	{ accessorKey: 'role', label: 'Role' },
-	{ accessorKey: 'studentType', label: 'Tipe' },
 	{ accessorKey: 'createdAt', label: 'Dibuat', type: 'date' }
 ];
