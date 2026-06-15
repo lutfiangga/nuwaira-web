@@ -63,9 +63,8 @@
 
 	const stats: StatItem[] = [
 		{ value: 85, max: 100, label: '85%', description: 'Lulusan bekerja di bidang IT' },
-		{ value: 11, max: 100, label: '11/100', description: 'Siswa diterima sebelum wisuda' },
 		{ value: 92, max: 100, label: '92%', description: 'Tingkat kepuasan siswa' },
-		{ value: 4.8, max: 5, label: '4.8/5', description: 'Rating rata-rata dari alumni' }
+		{ value: 90, max: 100, label: '90%', description: 'Rating rata-rata dari alumni' }
 	];
 
 	function createCarousel<T>(items: T[]) {

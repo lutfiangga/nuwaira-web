@@ -57,27 +57,27 @@ export const AUDIENCE_BENEFITS: {
 export const FACILITIES = [
 	{
 		label: 'Ruang Diskusi',
-		src: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85',
+		src: '/images/facilities/1.jpg',
 		alt: 'Ruang diskusi modern'
 	},
 	{
 		label: 'Musholla',
-		src: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85',
+		src: '/images/facilities/2.jpg',
 		alt: 'Area interior gedung belajar'
 	},
 	{
 		label: 'Taman',
-		src: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=900&q=85',
+		src: '/images/facilities/3.jpg',
 		alt: 'Taman hijau'
 	},
 	{
 		label: 'Ruang Kelas',
-		src: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=900&q=85',
+		src: '/images/facilities/4.jpg',
 		alt: 'Ruang kelas'
 	},
 	{
 		label: 'Gazebo',
-		src: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=85',
+		src: '/images/facilities/5.jpg',
 		alt: 'Gazebo terbuka'
 	}
 ] as const;

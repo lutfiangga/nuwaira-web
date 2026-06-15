@@ -112,7 +112,7 @@
 					{#if plan.benefits.length > 0}
 						<ul class="mt-5 space-y-2.5">
 							{#each plan.benefits as benefit (benefit)}
-								<li class="flex items-start gap-2.5 text-sm text-slate-600">
+								<li class="flex items-start gap-2.5 text-base text-slate-600">
 									<span
 										class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2458cf] text-white"
 									>
