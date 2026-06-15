@@ -1,17 +1,28 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import { LiquidGlass } from '$lib/components/ui/liquid-glass';
+	import EvonicIcon from '$lib/components/icons/evonicIcon.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { SiGit, SiSvelte } from 'svelte-icons-pack/si';
+	import { AiOutlineJavaScript } from 'svelte-icons-pack/ai';
+
+	let refraction = $state(80);
+	let depth = $state(12);
+	let dispersion = $state(0);
+	let frost = $state(0);
+	let splay = $state(0);
+	let lightAngle = $state(-45);
+	let lightIntensity = $state(0.8);
 </script>
 
-<div class="w-full flex-1 flex flex-col max-w-7xl mx-auto items-center justify-center px-6 md:px-4 space-y-6">
-	<div class="w-full max-w-5xl flex flex-col items-center text-center gap-6 px-6">
-		<Badge class="text-base bg-brand h-12 px-6">
-			Sekolah Coding & AI di Yogyakarta
-		</Badge>
+<div
+	class="w-full flex-1 flex flex-col max-w-7xl mx-auto items-center justify-center px-6 md:px-4 space-y-6 my-12"
+>
+	<div class="w-full max-w-5xl flex flex-col items-center text-center gap-6 px-6 py-12">
+		<Badge class="text-base bg-brand h-12 px-6">Sekolah Coding & AI di Yogyakarta</Badge>
 
-		<h1
-			class="max-w-5xl text-4xl md:text-6xl font-semibold tracking-tight font-raleway"
-		>
+		<h1 class="max-w-5xl text-4xl/12 md:text-6xl/16 font-semibold tracking-tight font-raleway">
 			Kuasai Skills Teknologi
 			<br />
 			<span class="text-brand">#EraBaru</span> Bersama Nuwaira
@@ -41,11 +52,83 @@
 			</Button>
 		</div>
 	</div>
-	<div class="w-full mx-auto mt-4">
-		<img
-			class="w-full max-h-96 object-cover rounded-3xl md:rounded-4xl"
-			src="https://images.unsplash.com/photo-1758270705317-3ef6142d306f?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-			alt="Team Students Collaboration"
-		/>
+	<div class="relative mx-auto mt-4 h-[550px] w-full overflow-hidden rounded-3xl md:rounded-4xl">
+	<img
+		class="absolute inset-0 h-full w-full object-cover object-center"
+		src="/images/homepage/hero.webp"
+		alt="Team Students Collaboration"
+	/>
+
+	<!-- Top Left -->
+	<div class="absolute left-8 top-12 z-10 md:left-56 md:top-16">
+		<LiquidGlass
+			variant="card"
+			className="-rotate-6 transition-transform duration-300 hover:rotate-0 hover:scale-105"
+			{refraction}
+			{depth}
+			{dispersion}
+			{frost}
+			{splay}
+			{lightAngle}
+			{lightIntensity}
+		>
+			<EvonicIcon className="h-auto w-16 p-3 md:w-20 md:p-4" />
+		</LiquidGlass>
 	</div>
+
+	<!-- Top Right -->
+	<div class="absolute right-8 top-12 z-10 md:right-56 md:top-16">
+		<LiquidGlass
+			variant="card"
+			className="rotate-6 transition-transform duration-300 hover:rotate-0 hover:scale-105"
+			{refraction}
+			{depth}
+			{dispersion}
+			{frost}
+			{splay}
+			{lightAngle}
+			{lightIntensity}
+		>
+			<Icon src={SiGit} className="h-auto w-16 p-3 md:w-20 md:p-4" color="white" />
+		</LiquidGlass>
+	</div>
+
+	<!-- Bottom Left -->
+	<div class="absolute bottom-12 left-4 z-10 md:bottom-16 md:left-32">
+		<LiquidGlass
+			variant="card"
+			className="rotate-3 transition-transform duration-300 hover:rotate-0 hover:scale-105"
+			{refraction}
+			{depth}
+			{dispersion}
+			{frost}
+			{splay}
+			{lightAngle}
+			{lightIntensity}
+		>
+			<Icon src={SiSvelte} className="h-auto w-16 p-3 md:w-20 md:p-4" color="white" />
+		</LiquidGlass>
+	</div>
+
+	<!-- Bottom Right -->
+	<div class="absolute bottom-12 right-4 z-10 md:bottom-16 md:right-32">
+		<LiquidGlass
+			variant="card"
+			className="-rotate-3 transition-transform duration-300 hover:rotate-0 hover:scale-105"
+			{refraction}
+			{depth}
+			{dispersion}
+			{frost}
+			{splay}
+			{lightAngle}
+			{lightIntensity}
+		>
+			<Icon
+				src={AiOutlineJavaScript}
+				className="h-auto w-16 p-3 md:w-20 md:p-4"
+				color="white"
+			/>
+		</LiquidGlass>
+	</div>
+</div>
 </div>

@@ -1,8 +1,15 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/app/database';
-import { student as studentTable, user } from '$lib/app/database/schema';
+import {
+	enrollment,
+	program,
+	programBatch,
+	programOffering,
+	student as studentTable,
+	user
+} from '$lib/app/database/schema';
 import { decryptSensitiveValue } from '$lib/app/server/encryption';
 
 export const load: PageServerLoad = async (event) => {
@@ -20,7 +27,6 @@ export const load: PageServerLoad = async (event) => {
 			studentType: user.studentType,
 			photo: user.photo,
 			activeEducation: studentTable.activeEducation,
-			programGoal: studentTable.programGoal,
 			nikEncrypted: studentTable.nikEncrypted
 		})
 		.from(user)
@@ -89,11 +95,29 @@ export const load: PageServerLoad = async (event) => {
 		redirect(302, '/');
 	}
 
+	const [latestEnrollment] = await db
+		.select({
+			id: enrollment.id,
+			motivation: enrollment.motivation,
+			status: enrollment.status,
+			programTitle: program.title,
+			offeringName: programOffering.name,
+			batchTitle: programBatch.title
+		})
+		.from(enrollment)
+		.innerJoin(studentTable, eq(studentTable.id, enrollment.studentId))
+		.innerJoin(programOffering, eq(programOffering.id, enrollment.offeringId))
+		.innerJoin(program, eq(program.id, programOffering.programId))
+		.leftJoin(programBatch, eq(programBatch.id, enrollment.batchId))
+		.where(eq(studentTable.userId, account.id))
+		.orderBy(desc(enrollment.createdAt))
+		.limit(1);
+
 	return {
 		view: 'student' as const,
 		account,
 		admin: null,
-		student: account
+		student: { ...account, enrollment: latestEnrollment ?? null }
 	};
 };
 

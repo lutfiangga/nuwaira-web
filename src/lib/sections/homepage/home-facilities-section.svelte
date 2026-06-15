@@ -32,7 +32,7 @@
 
 <section class="w-full bg-brand my-12 pb-16">
 	<div class="w-full max-w-7xl px-6 justify-center mx-auto flex flex-col gap-4 py-12">
-		<h2 class="text-white text-4xl md:text-6xl text-center font-raleway font-semibold">
+		<h2 class="text-white text-4xl/12 md:text-6xl/16 text-center font-raleway font-semibold">
 			Belajar dan Tumbuh di <br> #EraBaru Bersama Nuwaira
 		</h2>
 	</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	export let size: string = 'h-4 w-4';
-	export let className: string = '';
+  export let size: string | number = '24';
+	export let className: string = 'h-4 w-4';
 </script>
 
 <svg

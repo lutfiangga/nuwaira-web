@@ -26,6 +26,7 @@ const LoginPasswordSchema = z.preprocess(
 const LoginSchema = z.object({
 	email: LoginEmailSchema,
 	password: LoginPasswordSchema,
+	returnTo: z.string().optional(),
 	cfTurnstileResponse: z.string().optional()
 });
 
@@ -34,11 +35,12 @@ function getRedirectPath(role: string) {
 }
 
 export const load: PageServerLoad = async (event) => {
+	const returnTo = safeReturnTo(event.url.searchParams.get('returnTo'));
 	if (event.locals.user) {
-		redirect(302, getRedirectPath(event.locals.user.role));
+		redirect(302, returnTo ?? getRedirectPath(event.locals.user.role));
 	}
 
-	return {};
+	return { returnTo };
 };
 
 export const actions: Actions = {
@@ -47,6 +49,7 @@ export const actions: Actions = {
 		const result = LoginSchema.safeParse({
 			email: formData.get('email'),
 			password: formData.get('password'),
+			returnTo: formData.get('returnTo'),
 			cfTurnstileResponse: formData.get('cf-turnstile-response')
 		});
 
@@ -90,6 +93,11 @@ export const actions: Actions = {
 		const session = await auth.createSession(sessionToken, account.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		redirect(303, getRedirectPath(account.role));
+		redirect(303, safeReturnTo(result.data.returnTo) ?? getRedirectPath(account.role));
 	}
 };
+
+function safeReturnTo(value: string | null | undefined) {
+	if (!value || !value.startsWith('/') || value.startsWith('//')) return null;
+	return value;
+}

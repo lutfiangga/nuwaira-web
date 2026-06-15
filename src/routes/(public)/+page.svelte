@@ -6,6 +6,8 @@
 	import Program from '$lib/sections/homepage/home-program-section.svelte';
 	import Benefits from '$lib/sections/homepage/home-benefits-section.svelte';
 	import Testimonial from '$lib/sections/homepage/home-testimonial-section.svelte';
+
+	let { data } = $props();
 </script>
 
 <svelte:head>
@@ -20,6 +22,6 @@
 <Hero />
 <Features />
 <Facilities />
-<Program />
+<Program programs={data.publicNavigation.programs} />
 <Benefits />
 <Testimonial />

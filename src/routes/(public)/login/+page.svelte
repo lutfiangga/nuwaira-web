@@ -8,7 +8,7 @@
 		errors?: Record<string, string[] | undefined>;
 	};
 
-	let { form }: { form?: LoginForm } = $props();
+	let { data, form }: { data: { returnTo?: string | null }; form?: LoginForm } = $props();
 
 	const errors = $derived(form?.errors ?? {});
 	let turnstileToken = $state('');
@@ -43,6 +43,7 @@
 			method="post"
 			class="w-full h-full rounded-lg bg-white p-6 text-slate-950 md:p-8 items-center justify-center flex flex-col"
 		>
+			<input type="hidden" name="returnTo" value={data.returnTo ?? ''} />
 			<div class="mb-6 w-full">
 				<p class="text-sm font-medium text-slate-500">Nuwaira Academy</p>
 				<h2 class="mt-1 text-2xl font-semibold">Login</h2>
@@ -83,7 +84,10 @@
 
 			<p class="mt-5 text-center text-sm text-slate-500">
 				Belum terdaftar?
-				<a href="/register" class="font-medium text-blue-700 underline">Buat akun siswa</a>
+				<a
+					href={data.returnTo ?? '/register'}
+					class="font-medium text-blue-700 underline">Buat akun siswa</a
+				>
 			</p>
 		</form>
 	</section>

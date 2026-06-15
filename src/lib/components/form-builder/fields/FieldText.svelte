@@ -9,6 +9,7 @@
 
 	let showPassword = $state(false);
 	const isPassword = $derived(config.type === 'password');
+	const inputType = $derived(isPassword && !showPassword ? 'password' : config.type);
 </script>
 
 <div class="space-y-2 {config.class}">
@@ -20,7 +21,7 @@
 		<Input
 			id={config.name}
 			name={config.name}
-			type={isPassword && !showPassword ? 'password' : 'text'}
+			type={inputType}
 			placeholder={config.placeholder}
 			required={config.required}
 			disabled={config.disabled}

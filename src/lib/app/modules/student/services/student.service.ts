@@ -1,15 +1,22 @@
 import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { db } from '$lib/app/database';
-import { student, user } from '$lib/app/database/schema';
+import {
+	enrollment,
+	program,
+	programBatch,
+	programOffering,
+	student,
+	user,
+	type EnrollmentStatus
+} from '$lib/app/database/schema';
 import { createSensitiveIndex, decryptSensitiveValue } from '$lib/app/server/encryption';
-import type { StudentStatus } from '../models/student.schema';
 
 export class StudentService {
 	static async getAll(params: {
 		search?: string;
 		page?: number;
 		pageSize?: number;
-		status?: StudentStatus;
+		status?: EnrollmentStatus;
 	}) {
 		const search = params.search?.trim() ?? '';
 		const page = Math.max(1, params.page ?? 1);
@@ -19,42 +26,53 @@ export class StudentService {
 		const searchClause = search
 			? or(
 					ilike(student.fullName, `%${search}%`),
-					ilike(student.email, `%${search}%`),
-					ilike(student.whatsapp, `%${search}%`),
+					ilike(user.email, `%${search}%`),
+					ilike(user.phone, `%${search}%`),
 					ilike(student.regencyName, `%${search}%`),
 					...(nikHash ? [eq(student.nikHash, nikHash)] : [])
 				)
 			: undefined;
 		const whereClause = and(
-			params.status ? eq(student.status, params.status) : undefined,
+			params.status ? eq(enrollment.status, params.status) : undefined,
 			searchClause
 		);
 
+		const baseSelect = {
+			id: student.id,
+			enrollmentId: enrollment.id,
+			userId: student.userId,
+			fullName: student.fullName,
+			nikEncrypted: student.nikEncrypted,
+			email: user.email,
+			whatsapp: user.phone,
+			activeEducation: student.activeEducation,
+			status: enrollment.status,
+			regencyName: student.regencyName,
+			provinceName: student.provinceName,
+			programTitle: program.title,
+			batchTitle: programBatch.title,
+			createdAt: enrollment.createdAt,
+			accountEmail: user.email
+		};
+
 		const [rows, totalRows] = await Promise.all([
 			db
-				.select({
-					id: student.id,
-					userId: student.userId,
-					fullName: student.fullName,
-					nikEncrypted: student.nikEncrypted,
-					email: student.email,
-					whatsapp: student.whatsapp,
-					activeEducation: student.activeEducation,
-					status: student.status,
-					regencyName: student.regencyName,
-					provinceName: student.provinceName,
-					createdAt: student.createdAt,
-					accountEmail: user.email
-				})
-				.from(student)
+				.select(baseSelect)
+				.from(enrollment)
+				.innerJoin(student, eq(student.id, enrollment.studentId))
 				.innerJoin(user, eq(user.id, student.userId))
+				.innerJoin(programOffering, eq(programOffering.id, enrollment.offeringId))
+				.innerJoin(program, eq(program.id, programOffering.programId))
+				.leftJoin(programBatch, eq(programBatch.id, enrollment.batchId))
 				.where(whereClause)
-				.orderBy(desc(student.createdAt))
+				.orderBy(desc(enrollment.createdAt))
 				.limit(pageSize)
 				.offset(offset),
 			db
 				.select({ count: sql<number>`count(*)` })
-				.from(student)
+				.from(enrollment)
+				.innerJoin(student, eq(student.id, enrollment.studentId))
+				.innerJoin(user, eq(user.id, student.userId))
 				.where(whereClause)
 		]);
 
@@ -73,12 +91,13 @@ export class StudentService {
 		const [row] = await db
 			.select({
 				id: student.id,
+				enrollmentId: enrollment.id,
 				userId: student.userId,
 				fullName: student.fullName,
 				nikEncrypted: student.nikEncrypted,
 				birthDate: student.birthDate,
-				whatsapp: student.whatsapp,
-				email: student.email,
+				whatsapp: user.phone,
+				email: user.email,
 				fullAddress: student.fullAddress,
 				provinceName: student.provinceName,
 				regencyName: student.regencyName,
@@ -89,39 +108,56 @@ export class StudentService {
 				guardianName: student.guardianName,
 				guardianRelation: student.guardianRelation,
 				guardianWhatsapp: student.guardianWhatsapp,
-				referralSource: student.referralSource,
-				programGoal: student.programGoal,
-				hasProgrammingBasics: student.hasProgrammingBasics,
-				usesAiTools: student.usesAiTools,
-				status: student.status,
-				createdAt: student.createdAt,
-				updatedAt: student.updatedAt,
+				referralSource: enrollment.referralSource,
+				programGoal: enrollment.motivation,
+				hasProgrammingBasics: enrollment.hasProgrammingBasics,
+				usesAiTools: enrollment.usesAiTools,
+				status: enrollment.status,
+				programTitle: program.title,
+				batchTitle: programBatch.title,
+				createdAt: enrollment.createdAt,
+				updatedAt: enrollment.updatedAt,
 				accountEmail: user.email,
 				accountRole: user.role
 			})
 			.from(student)
 			.innerJoin(user, eq(user.id, student.userId))
+			.innerJoin(enrollment, eq(enrollment.studentId, student.id))
+			.innerJoin(programOffering, eq(programOffering.id, enrollment.offeringId))
+			.innerJoin(program, eq(program.id, programOffering.programId))
+			.leftJoin(programBatch, eq(programBatch.id, enrollment.batchId))
 			.where(and(eq(student.id, id), eq(user.role, 'student')))
+			.orderBy(desc(enrollment.createdAt))
 			.limit(1);
 
 		if (!row) return null;
-
 		const { nikEncrypted, ...studentData } = row;
-		return {
-			...studentData,
-			nik: decryptNik(nikEncrypted)
-		};
+		return { ...studentData, nik: decryptNik(nikEncrypted) };
 	}
 
-	static async updateStatus(id: string, status: StudentStatus, expectedStatus?: StudentStatus) {
-		const [updated] = await db
-			.update(student)
-			.set({ status, updatedAt: new Date() })
+	static async updateStatus(
+		id: string,
+		status: EnrollmentStatus,
+		expectedStatus?: EnrollmentStatus
+	) {
+		const [target] = await db
+			.select({ id: enrollment.id })
+			.from(enrollment)
 			.where(
-				and(eq(student.id, id), expectedStatus ? eq(student.status, expectedStatus) : undefined)
+				and(
+					eq(enrollment.studentId, id),
+					expectedStatus ? eq(enrollment.status, expectedStatus) : undefined
+				)
 			)
-			.returning({ id: student.id, status: student.status });
+			.orderBy(desc(enrollment.createdAt))
+			.limit(1);
+		if (!target) return null;
 
+		const [updated] = await db
+			.update(enrollment)
+			.set({ status, updatedAt: new Date() })
+			.where(eq(enrollment.id, target.id))
+			.returning({ id: enrollment.id, status: enrollment.status });
 		return updated ?? null;
 	}
 }

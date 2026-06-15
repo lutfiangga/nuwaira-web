@@ -5,7 +5,7 @@
 
 <section class="w-full max-w-7xl mx-auto flex flex-col gap-4 py-6">
 	<p class="text-base text-brand text-center uppercase">Nuwaira Tempat Belajar yang Tepat</p>
-	<h2 class="text-3xl md:text-5xl font-semibold text-black text-center font-raleway px-6">
+	<h2 class="text-3xl/12 md:text-6xl/16 font-semibold text-black text-center font-raleway px-6">
 		Belajar Langsung, Praktik Nyata <br />
 		dan Kuasai Teknologi AI.
 	</h2>

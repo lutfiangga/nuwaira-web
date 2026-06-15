@@ -9,6 +9,7 @@
 	import FieldSelect from './fields/FieldSelect.svelte';
 	import FieldCombobox from './fields/FieldCombobox.svelte';
 	import FieldCheckbox from './fields/FieldCheckbox.svelte';
+	import FieldCheckboxGroup from './fields/FieldCheckboxGroup.svelte';
 	import FieldFile from './fields/FieldFile.svelte';
 	import FieldRichText from './fields/FieldRichText.svelte';
 	import FieldColor from './fields/FieldColor.svelte';
@@ -46,10 +47,12 @@
 		email: FieldText,
 		password: FieldText,
 		number: FieldText,
+		time: FieldText,
 		textarea: FieldTextarea,
 		select: FieldSelect,
 		combobox: FieldCombobox,
 		checkbox: FieldCheckbox,
+		'checkbox-group': FieldCheckboxGroup,
 		switch: FieldCheckbox,
 		file: FieldFile,
 		'rich-text': FieldRichText,
@@ -58,6 +61,38 @@
 
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
+
+	function hasFieldType(items: FormSchemaItem[], type: string): boolean {
+		for (const item of items) {
+			if ('type' in item) {
+				if (item.type === 'section' || item.type === 'grid' || item.type === 'group') {
+					if (hasFieldType(item.children, type)) return true;
+				} else if (item.type === type) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	function populateDefaults(items: FormSchemaItem[]) {
+		for (const item of items) {
+			if ('type' in item) {
+				if (item.type === 'section' || item.type === 'grid' || item.type === 'group') {
+					populateDefaults(item.children);
+				} else if (item.type === 'switch' || item.type === 'checkbox') {
+					if (data[item.name] === undefined) data[item.name] = false;
+				} else if (item.type === 'checkbox-group') {
+					if (!Array.isArray(data[item.name])) data[item.name] = [];
+				} else if (item.type === 'number') {
+					if (data[item.name] === undefined) data[item.name] = '';
+				} else if (item.type === 'time') {
+					if (data[item.name] === undefined) data[item.name] = '';
+				}
+			}
+		}
+	}
+	populateDefaults(schema);
 
 	const hasFile = $derived(schema.some(checkFileRecursive));
 
@@ -72,7 +107,7 @@
 	}
 
 	const enctype = $derived(hasFile ? 'multipart/form-data' : undefined);
-	
+
 	function slugify(text: string) {
 		return text
 			.toString()
@@ -97,38 +132,38 @@
 					if (item.type === 'text' && item.slugOrigin) {
 						const originValue = data[item.slugOrigin];
 						const currentSlugValue = data[item.name];
-						
+
 						// Only update if origin has value
 						// And maybe only if slug is empty OR matches previous slugified version (to allow editing)?
-						// For now, simpler: if origin changes, we update slug IF the slug matches what it "should" be 
+						// For now, simpler: if origin changes, we update slug IF the slug matches what it "should" be
 						// OR if the user hasn't manually edited it significantly?
 						// User request: "otomatis mengikuti title. tapi bisa edit slug juga"
 						// Common pattern: if slug is empty or matches slugify(origin), update it.
-						
+
 						if (originValue) {
 							const newSlug = slugify(originValue);
 							// If current slug is empty, fill it
 							if (!currentSlugValue) {
 								data[item.name] = newSlug;
-							} 
+							}
 							// If current slug matches the *previous* version of origin... we don't track history.
 							// let's try: if the current slug is exactly what the *previous* origin would have made? No.
-							// Let's go with: if the user hasn't "detached" it. 
+							// Let's go with: if the user hasn't "detached" it.
 							// Hack: Check if current slug is roughly similar?
-							// Safest simple approach: Update if 'clean' or if explicitly newly created. 
+							// Safest simple approach: Update if 'clean' or if explicitly newly created.
 							// But since we can't track 'touched', we might just update it if the user IS typing in title?
 							// We can't know which field is focused here easily.
-							
+
 							// Let's just update it if the current value is NOT set or looks like a slugified version of PART of the title?
 							// Actually, usually users want it to auto-update UNTIL they manually edit the slug.
-							// But without state tracking, we can't know. 
+							// But without state tracking, we can't know.
 							// Let's just update it if the current slug is equal to slugify(originValue - lastChar)?? No.
-							
+
 							// Re-reading request: "bisa edit slug juga sih posisinya"
 							// Usually implies: it auto-generates, but I can override.
 							// Strict binding: variable = slugify(title). If I edit variable, next title change overwrites it? Yes.
 							// Unless we use a flag.
-							
+
 							// Implementation: We will just set it = slugify(origin) whenever origin changes.
 							// BUT this prevents manual editing if title keeps changing?
 							// No, if I edit Slug, it stays. But if I then type in Title, it overwrites.

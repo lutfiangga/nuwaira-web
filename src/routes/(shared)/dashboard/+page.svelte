@@ -309,8 +309,20 @@
 			</div>
 
 			<div class="mt-4 rounded-lg border bg-white p-5">
-				<p class="text-sm text-slate-500">Motivasi</p>
-				<p class="mt-3 leading-7 text-slate-700">{student.programGoal}</p>
+				<p class="text-sm text-slate-500">Enrollment terbaru</p>
+				{#if student.enrollment}
+					<p class="mt-2 text-lg font-semibold text-slate-900">
+						{student.enrollment.programTitle}
+					</p>
+					<p class="mt-1 text-sm text-slate-500">
+						{student.enrollment.offeringName} · {student.enrollment.batchTitle ?? 'Private'} ·
+						{student.enrollment.status}
+					</p>
+					<p class="mt-4 text-sm text-slate-500">Motivasi pendaftaran</p>
+					<p class="mt-2 leading-7 text-slate-700">{student.enrollment.motivation}</p>
+				{:else}
+					<p class="mt-2 text-slate-600">Belum ada enrollment program.</p>
+				{/if}
 			</div>
 		</section>
 	{/if}
