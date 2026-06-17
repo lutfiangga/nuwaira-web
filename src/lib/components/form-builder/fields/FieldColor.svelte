@@ -5,7 +5,7 @@
 
 	let {
 		config,
-		value = $bindable('')
+		value = $bindable()
 	}: {
 		config: ColorFieldConfig;
 		value?: string;

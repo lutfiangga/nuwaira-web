@@ -75,3 +75,37 @@
   - email: `admin@nuwaira.id`
   - password: `password`
   - role: `admin`
+
+## FR-011 Program Management
+
+- Admin dapat membuat, mengubah, dan menghapus program.
+- Program memiliki slug, title, summary, hero image, dan status (draft/published/archived).
+- Admin dapat mengelola intro program (eyebrow, title, deskripsi, learning background, gambar).
+- Admin dapat mengelola offerings (batch/private) dengan harga, benefits, dan schedule.
+- Admin dapat mengelola batch dengan kapasitas, tanggal, lokasi (onsite/remote), dan status buka/tutup.
+- Admin dapat mengelola milestones, metrics, journeys, paragraphs, checklists, dan FAQ per program.
+- Homepage program section menampilkan program yang published dan memiliki offering aktif.
+
+## FR-012 Event Management
+
+- Admin dapat membuat, mengubah, dan menghapus acara.
+- Acara memiliki slug, title, deskripsi, tipe acara, tanggal, waktu, lokasi, harga, dan gambar.
+- Halaman publik `/acara` menampilkan daftar acara aktif.
+- Halaman detail `/acara/[slug]` menampilkan informasi acara lengkap.
+- Pengunjung dapat mendaftar acara melalui `/acara/[slug]/register`.
+- Duplicate check: email yang sama tidak boleh mendaftar acara yang sama dua kali.
+- Halaman pendaftaran acara memiliki layout bersih tanpa navbar/footer.
+- Turnstile wajib valid sebelum pendaftaran acara disimpan.
+
+## FR-013 Content Management
+
+- Admin dapat mengelola social media dengan icon selection dan bulk save.
+- Validasi social media menampilkan error per-field (platform, URL, icon).
+- Admin dapat mengelola FAQ.
+- Admin dapat mengelola facilities dengan gambar.
+- Admin dapat mengelola registration perks.
+
+## FR-014 Enrollment
+
+- Enrollment mencatat pendaftaran siswa ke offering/batch.
+- Admin dapat melihat daftar enrollment.

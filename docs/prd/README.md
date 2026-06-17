@@ -1,43 +1,48 @@
-# PRD - Nuwaira Academy Student Intake
+# PRD - Nuwaira Academy
 
 ## Vision
 
-Menyediakan funnel pendaftaran siswa yang jelas, aman untuk data sensitif, dan mudah direview admin sebelum pendaftar menjadi siswa aktif.
+Menyediakan platform pendaftaran siswa, manajemen program, dan acara yang terintegrasi — aman untuk data sensitif, mudah direview admin, dan dinamis dari database.
 
 ## Product Objectives
 
-- Visitor dapat mendaftar melalui form lengkap yang ramah perangkat mobile.
+- Visitor dapat mendaftar melalui form pendaftaran siswa dan acara yang ramah perangkat mobile.
 - Domisili menggunakan data wilayah Indonesia yang konsisten.
 - NIK tidak pernah disimpan sebagai plaintext.
 - Pendaftaran baru masuk sebagai calon siswa berstatus `pending`.
 - Admin dapat menerima atau menolak calon siswa.
 - Admin dapat mencari, melihat detail, dan mengelola user.
+- Admin dapat mengelola program, acara, konten, dan enrollment dari panel terpusat.
+- Homepage dan konten program dinamis dari database.
 - Student tetap dapat login dan membuka dashboard akun setelah registrasi.
 
 ## Primary Users
 
-- Visitor: melihat landing page dan mengisi form pendaftaran.
+- Visitor: melihat landing page, detail program, acara, dan mengisi form pendaftaran.
 - Calon siswa: akun student dengan intake `pending`.
 - Siswa: pendaftar dengan intake `accepted`.
-- Admin: mereview intake dan mengelola user.
+- Admin: mereview intake, mengelola program, acara, konten, dan user.
 
 ## In Scope
 
-- Landing page.
+- Landing page dinamis dari database.
+- Halaman detail program (intro, journey, pricing, FAQ).
+- Acara publik dan pendaftaran acara.
 - Form pendaftaran siswa.
 - Login dan logout.
 - Dashboard shared `/dashboard`.
-- Admin `/students`, `/prospective-students`, dan `/users`.
+- Admin: students, prospective-students, users, programs, events, content, enrollment.
 - Approval status `pending`, `accepted`, dan `rejected`.
 - Enkripsi dan pencarian aman untuk NIK.
 - Integrasi Emsifa, Turnstile, dan Cloudinary.
+- Manajemen konten: social media, FAQ, facilities, registration perks.
 
 ## Out of Scope
 
 - LMS class/material/enrollment.
-- Payment.
-- Attendance.
-- Certificate.
+- Payment gateway.
+- Attendance tracking.
+- Certificate generation.
 - Admin review notes.
 - Halaman khusus untuk riwayat pendaftar rejected.
 

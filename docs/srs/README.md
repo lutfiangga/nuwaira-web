@@ -2,10 +2,10 @@
 
 ## System Context
 
-- Public app: landing, register, login, dan logout.
-- Shared panel: `/dashboard`, role-aware untuk admin dan student.
-- Admin app: `/students`, `/prospective-students`, dan `/users`.
-- Service layer: auth, user, student, location, encryption, Cloudinary, dan Turnstile.
+- Public app: landing, register, login, logout, acara, dan detail program.
+- Shared panel: `/dashboard` dan `/attendance`, role-aware untuk admin dan student.
+- Admin app: `/students`, `/prospective-students`, `/users`, `/programs`, `/events`, `/enrollments`, dan konten.
+- Service layer: auth, user, student, program, event, content, location, encryption, Cloudinary, dan Turnstile.
 - Data layer: PostgreSQL dan Drizzle ORM.
 
 ## Runtime
@@ -48,8 +48,8 @@ bun run db:seed
 ## External Services
 
 - Emsifa: data provinsi sampai kelurahan/desa.
-- Cloudflare Turnstile: validasi anti-bot form register.
-- Cloudinary: upload foto user pada flow admin.
+- Cloudflare Turnstile: validasi anti-bot form register siswa dan acara.
+- Cloudinary: upload gambar (user, program, acara, facilities).
 
 ## Delivery Rule
 

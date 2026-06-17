@@ -8,6 +8,9 @@ import {
 	UpdateEventSchema
 } from '$lib/app/modules/program/requests/event.request';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
+import { uploadCloudinaryImage } from '$lib/app/server/cloudinary';
+
+const EVENT_IMAGE_FOLDER = 'events';
 
 function generateId() {
 	return encodeBase32LowerCase(crypto.getRandomValues(new Uint8Array(15)));
@@ -25,6 +28,22 @@ function getErrorMessage(error: unknown): string {
 	return String(error);
 }
 
+async function resolveImage(formData: FormData, field: string): Promise<string | undefined> {
+	const file = formData.get(field);
+	const uploaded = await (file instanceof File && file.size > 0 && file.name !== 'undefined'
+		? uploadCloudinaryImage(file, EVENT_IMAGE_FOLDER).then((result) => result.url)
+		: Promise.resolve(undefined));
+	const existing = formData.getAll(`${field}_existing`);
+	const latestExisting = existing.at(-1);
+	return uploaded ?? (typeof latestExisting === 'string' ? latestExisting : undefined);
+}
+
+async function getEventRawData(formData: FormData) {
+	const imageUrl = await resolveImage(formData, 'imageUrl');
+	formData.set('imageUrl', imageUrl ?? '');
+	return Object.fromEntries(formData);
+}
+
 export const load: PageServerLoad = async ({ url }) => {
 	const search = url.searchParams.get('search') ?? '';
 	const page = Number(url.searchParams.get('page')) || 1;
@@ -40,6 +59,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	const sortMap: Record<string, unknown> = {
 		title: publicEvent.title,
 		slug: publicEvent.slug,
+		eventType: publicEvent.eventType,
+		location: publicEvent.location,
 		isActive: publicEvent.isActive,
 		startAt: publicEvent.startAt,
 		endAt: publicEvent.endAt,
@@ -69,10 +90,33 @@ export const load: PageServerLoad = async ({ url }) => {
 	};
 };
 
+function buildEventValues(data: ReturnType<typeof CreateEventSchema.parse>) {
+	return {
+		slug: data.slug,
+		title: data.title,
+		summary: data.description,
+		description: data.description,
+		eventType: data.eventType || null,
+		imageUrl: data.imageUrl || null,
+		imageAlt: null,
+		location: data.location || null,
+		priceAmount: data.priceAmount ?? null,
+		currency: 'IDR',
+		startAt: combineDateTime(data.startAt, data.startTime),
+		endAt: combineDateTime(data.endAt, data.endTime),
+		registrationUrl: null,
+		isActive: data.isActive
+	};
+}
+
+function combineDateTime(dateValue?: string | null, timeValue?: string | null) {
+	return dateValue ? new Date(`${dateValue}T${timeValue ?? '00:00'}:00`) : null;
+}
+
 export const actions: Actions = {
 	create: async (event) => {
 		const formData = await event.request.formData();
-		const rawData = Object.fromEntries(formData);
+		const rawData = await getEventRawData(formData);
 
 		const result = CreateEventSchema.safeParse(rawData);
 		if (!result.success) {
@@ -85,10 +129,7 @@ export const actions: Actions = {
 		try {
 			await db.insert(publicEvent).values({
 				id: generateId(),
-				...result.data,
-				startAt: result.data.startAt ? new Date(result.data.startAt) : null,
-				endAt: result.data.endAt ? new Date(result.data.endAt) : null,
-				registrationUrl: result.data.registrationUrl || null,
+				...buildEventValues(result.data),
 				createdAt: new Date(),
 				updatedAt: new Date()
 			});
@@ -104,7 +145,7 @@ export const actions: Actions = {
 
 	update: async (event) => {
 		const formData = await event.request.formData();
-		const rawData = Object.fromEntries(formData);
+		const rawData = await getEventRawData(formData);
 
 		const result = UpdateEventSchema.safeParse(rawData);
 		if (!result.success) {
@@ -118,13 +159,7 @@ export const actions: Actions = {
 			await db
 				.update(publicEvent)
 				.set({
-					slug: result.data.slug,
-					title: result.data.title,
-					summary: result.data.summary,
-					startAt: result.data.startAt ? new Date(result.data.startAt) : null,
-					endAt: result.data.endAt ? new Date(result.data.endAt) : null,
-					registrationUrl: result.data.registrationUrl || null,
-					isActive: result.data.isActive,
+					...buildEventValues(result.data),
 					updatedAt: new Date()
 				})
 				.where(eq(publicEvent.id, result.data.id));
@@ -136,6 +171,30 @@ export const actions: Actions = {
 			}
 			return fail(500, { message: 'Failed to update event' });
 		}
+	},
+
+	toggleStatus: async ({ request }) => {
+		const form = await request.formData();
+		const id = form.get('id');
+		const isActive = form.get('isActive') === 'true';
+		const isValidId = typeof id === 'string';
+		const handlers = {
+			valid: async () => {
+				try {
+					await db
+						.update(publicEvent)
+						.set({ isActive, updatedAt: new Date() })
+						.where(eq(publicEvent.id, id as string));
+					return { success: true };
+				} catch (error: unknown) {
+					console.error('Toggle Event Status Error:', error);
+					return fail(500, { message: 'Failed to update event status' });
+				}
+			},
+			invalid: async () => fail(400, { message: 'Invalid ID' })
+		};
+
+		return handlers[isValidId ? 'valid' : 'invalid']();
 	},
 
 	delete: async ({ request }) => {

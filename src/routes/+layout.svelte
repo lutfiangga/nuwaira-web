@@ -11,8 +11,10 @@
 
 	const showFooter = $derived.by(() => {
 		const path = $page.url.pathname;
+		if (path.includes('/register')) return false;
 		if (path === '/') return true;
 		if (path.startsWith('/programs/')) return true;
+		if (path.startsWith('/acara')) return true;
 		return false;
 	});
 </script>

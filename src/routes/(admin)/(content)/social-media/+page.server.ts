@@ -34,9 +34,26 @@ export const actions: Actions = {
 
 		const result = BulkSocialLinkSchema.safeParse(parsed);
 		if (!result.success) {
+			const formatted = result.error.format();
+			const linkErrors: Record<number, Record<string, string>> = {};
+
+			const items = (formatted.links as unknown as Record<string, unknown>) ?? {};
+			for (const [key, val] of Object.entries(items)) {
+				const idx = Number(key);
+				if (Number.isNaN(idx) || typeof val !== 'object' || val === null) continue;
+				const fieldErrors = val as Record<string, { _errors?: string[] }>;
+				linkErrors[idx] = {};
+				for (const [field, err] of Object.entries(fieldErrors)) {
+					if (field === '_errors') continue;
+					if (err?._errors?.[0]) linkErrors[idx][field] = err._errors[0];
+				}
+			}
+
+			console.error('Social media validation errors:', JSON.stringify(linkErrors, null, 2));
+
 			return fail(400, {
 				message: 'Validasi gagal',
-				errors: result.error.flatten().fieldErrors
+				linkErrors
 			});
 		}
 

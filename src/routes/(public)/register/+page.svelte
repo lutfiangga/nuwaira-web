@@ -111,7 +111,7 @@
 	const offeringOptions = $derived(filteredOfferings.map((o) => ({ value: o.slug, label: o.name })));
 
 	const formatPrice = (amount: number | null) => {
-		if (amount === null) return 'Gratis';
+		if (amount === null) return 'Full Beasiswa';
 		return new Intl.NumberFormat('id-ID', {
 			style: 'currency',
 			currency: 'IDR',

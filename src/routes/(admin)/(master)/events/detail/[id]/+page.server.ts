@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/app/database';
-import { publicEvent } from '$lib/app/database/schema';
+import { publicEvent, eventRegistration } from '$lib/app/database/schema';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const [event] = await db
@@ -13,5 +13,21 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	if (!event) error(404, 'Event not found');
 
-	return { event };
+	const [registrations, totalResult] = await Promise.all([
+		db
+			.select()
+			.from(eventRegistration)
+			.where(eq(eventRegistration.eventId, params.id))
+			.orderBy(desc(eventRegistration.createdAt)),
+		db
+			.select({ count: sql<number>`count(*)` })
+			.from(eventRegistration)
+			.where(eq(eventRegistration.eventId, params.id))
+	]);
+
+	return {
+		event,
+		registrations,
+		registrationTotal: totalResult[0]?.count ?? 0
+	};
 };

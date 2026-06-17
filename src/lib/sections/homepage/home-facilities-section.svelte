@@ -22,10 +22,6 @@
 		{
 			src: '/images/homepage/5.jpg',
 			alt: 'Student learning in a classroom'
-		},
-		{
-			src: '/images/homepage/6.jpg',
-			alt: 'Students working together with laptops'
 		}
 	] as const;
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { Plus, Share2, Trash2, Instagram, Youtube, Facebook, Linkedin, Twitter, Github, Twitch, Send, Globe, MessageCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -41,12 +42,14 @@
 	let saving = $state(false);
 	let saveMessage = $state('');
 	let saveError = $state('');
+	let validationErrors = $state<Record<number, Record<string, string>>>({});
 	let restoredForm: Record<string, unknown> | null | undefined;
 
 	$effect(() => {
 		if (form === restoredForm) return;
 		restoredForm = form;
 		saving = false;
+		validationErrors = {};
 
 		if (form?.success) {
 			saveMessage = (form.message as string) ?? 'Berhasil disimpan';
@@ -54,6 +57,7 @@
 		} else if (form?.message && !form?.success) {
 			saveError = form.message as string;
 			saveMessage = '';
+			validationErrors = (form.linkErrors as Record<number, Record<string, string>>) ?? {};
 		}
 	});
 
@@ -106,7 +110,23 @@
 	</header>
 
 	<section class="rounded-3xl border border-slate-200 bg-white p-5 md:p-6">
-		<form method="post" action="?/save">
+		<form method="post" action="?/save" use:enhance={({ formData }) => {
+			formData.set('links', JSON.stringify(links));
+			saving = true;
+			return async ({ result }) => {
+				if (result.type === 'success') {
+					saveMessage = (result.data as Record<string, unknown>)?.message as string ?? 'Berhasil disimpan';
+					saveError = '';
+					validationErrors = {};
+				} else if (result.type === 'failure') {
+					const data = result.data as Record<string, unknown>;
+					saveError = data?.message as string ?? 'Validasi gagal';
+					saveMessage = '';
+					validationErrors = (data?.linkErrors as Record<number, Record<string, string>>) ?? {};
+				}
+				saving = false;
+			};
+		}}>
 			<input type="hidden" name="links" value={JSON.stringify(links)} />
 
 			{#if saveMessage}
@@ -144,11 +164,17 @@
 							<div class="grid gap-4 sm:grid-cols-2">
 								<div class="space-y-1.5">
 									<label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Platform</label>
-									<Input bind:value={link.platform} required placeholder="contoh: Instagram" class="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none" />
+									<Input bind:value={link.platform} required placeholder="contoh: Instagram" class="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none {validationErrors[i]?.platform ? 'border-red-400' : ''}" />
+									{#if validationErrors[i]?.platform}
+										<p class="text-xs text-red-600">{validationErrors[i].platform}</p>
+									{/if}
 								</div>
 								<div class="space-y-1.5">
 									<label class="text-xs font-semibold uppercase tracking-wide text-slate-400">URL</label>
-									<Input bind:value={link.url} required placeholder="https://instagram.com/..." class="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none" />
+									<Input bind:value={link.url} required placeholder="https://instagram.com/..." class="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none {validationErrors[i]?.url ? 'border-red-400' : ''}" />
+									{#if validationErrors[i]?.url}
+										<p class="text-xs text-red-600">{validationErrors[i].url}</p>
+									{/if}
 								</div>
 							</div>
 							<div class="space-y-1.5">
@@ -168,6 +194,7 @@
 											onSelect={(v) => handleIconSelect(i, v)}
 											placeholder="Pilih icon..."
 											searchPlaceholder="Cari icon..."
+											error={validationErrors[i]?.iconKey}
 										/>
 									</div>
 								</div>

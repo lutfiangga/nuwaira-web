@@ -13,6 +13,7 @@
 	import FieldFile from './fields/FieldFile.svelte';
 	import FieldRichText from './fields/FieldRichText.svelte';
 	import FieldColor from './fields/FieldColor.svelte';
+	import FieldDate from './fields/FieldDate.svelte';
 
 	// Import Custom Components
 	import LocationSearch from '$lib/components/location-search.svelte';
@@ -55,6 +56,7 @@
 		'checkbox-group': FieldCheckboxGroup,
 		switch: FieldCheckbox,
 		file: FieldFile,
+		date: FieldDate,
 		'rich-text': FieldRichText,
 		color: FieldColor
 	};
@@ -81,18 +83,23 @@
 				if (item.type === 'section' || item.type === 'grid' || item.type === 'group') {
 					populateDefaults(item.children);
 				} else if (item.type === 'switch' || item.type === 'checkbox') {
-					if (data[item.name] === undefined) data[item.name] = false;
+					if (data[item.name] === undefined) data[item.name] = item.defaultValue ?? false;
 				} else if (item.type === 'checkbox-group') {
 					if (!Array.isArray(data[item.name])) data[item.name] = [];
 				} else if (item.type === 'number') {
 					if (data[item.name] === undefined) data[item.name] = '';
 				} else if (item.type === 'time') {
 					if (data[item.name] === undefined) data[item.name] = '';
+				} else if (item.type === 'date') {
+					if (data[item.name] === undefined) data[item.name] = '';
 				}
 			}
 		}
 	}
-	populateDefaults(schema);
+
+	$effect.pre(() => {
+		populateDefaults(schema);
+	});
 
 	const hasFile = $derived(schema.some(checkFileRecursive));
 
@@ -116,6 +123,36 @@
 			.replace(/\s+/g, '-') // Replace spaces with -
 			.replace(/[^\w\-]+/g, '') // Remove all non-word chars
 			.replace(/\-\-+/g, '-'); // Replace multiple - with single -
+	}
+
+	type VisibleWhen = {
+		field: string;
+		equals?: string | number | boolean | null;
+		notEquals?: string | number | boolean | null;
+	};
+	type VisibilityResolver = (condition: VisibleWhen, value: unknown) => boolean;
+
+	const visibilityResolvers: Record<string, VisibilityResolver> = {
+		equals: (condition, value) => value == condition.equals,
+		notEquals: (condition, value) => value != condition.notEquals,
+		default: () => true
+	};
+
+	function getVisibilityCondition(item: FormSchemaItem) {
+		return 'visibleWhen' in item ? item.visibleWhen : undefined;
+	}
+
+	function getVisibilityResolver(condition?: VisibleWhen) {
+		return condition && 'equals' in condition
+			? visibilityResolvers.equals
+			: condition && 'notEquals' in condition
+				? visibilityResolvers.notEquals
+				: visibilityResolvers.default;
+	}
+
+	function isItemVisible(item: FormSchemaItem) {
+		const condition = getVisibilityCondition(item);
+		return getVisibilityResolver(condition)(condition ?? { field: '' }, condition ? data[condition.field] : undefined);
 	}
 
 	// Auto-slug generator
@@ -181,18 +218,20 @@
 </script>
 
 {#snippet renderItem(item: FormSchemaItem)}
-	{#if item.type === 'section'}
-		<Section config={item} {renderItem} />
-	{:else if item.type === 'grid'}
-		<Grid config={item} {renderItem} />
-	{:else if item.type === 'group'}
-		<Group config={item} {renderItem} />
-	{:else if item.type === 'custom'}
-		<LocationSearch bind:latitude={data.latitude} bind:longitude={data.longitude} />
-	{:else}
-		{#each [FIELD_COMPONENTS[item.type]] as Comp}
-			<Comp config={item} bind:value={data[item.name]} />
-		{/each}
+	{#if isItemVisible(item)}
+		{#if item.type === 'section'}
+			<Section config={item} {renderItem} />
+		{:else if item.type === 'grid'}
+			<Grid config={item} {renderItem} />
+		{:else if item.type === 'group'}
+			<Group config={item} {renderItem} />
+		{:else if item.type === 'custom'}
+			<LocationSearch bind:latitude={data.latitude} bind:longitude={data.longitude} />
+		{:else}
+			{#each [FIELD_COMPONENTS[item.type]] as Comp}
+				<Comp config={item} bind:value={data[item.name]} />
+			{/each}
+		{/if}
 	{/if}
 {/snippet}
 

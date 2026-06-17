@@ -53,8 +53,8 @@ export function getCreateBatchFormSchema(offeringOptions: SelectOption[]): FormS
 					type: 'grid',
 					columns: 2,
 					children: [
-						{ name: 'startDate', label: 'Start Date', type: 'text', placeholder: '2026-07-01' },
-						{ name: 'endDate', label: 'End Date', type: 'text', placeholder: '2026-11-30' }
+						{ name: 'startDate', label: 'Start Date', type: 'date', placeholder: 'Pilih start date' },
+						{ name: 'endDate', label: 'End Date', type: 'date', placeholder: 'Pilih end date' }
 					]
 				},
 				{
@@ -64,14 +64,14 @@ export function getCreateBatchFormSchema(offeringOptions: SelectOption[]): FormS
 						{
 							name: 'registrationOpenAt',
 							label: 'Registration Open',
-							type: 'text',
-							placeholder: '2026-06-01'
+							type: 'date',
+							placeholder: 'Pilih registration open'
 						},
 						{
 							name: 'registrationCloseAt',
 							label: 'Registration Close',
-							type: 'text',
-							placeholder: '2026-06-30'
+							type: 'date',
+							placeholder: 'Pilih registration close'
 						}
 					]
 				},

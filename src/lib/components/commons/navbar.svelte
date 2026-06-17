@@ -16,7 +16,7 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 
 	let mobileMenuOpen = $state(false);
-	let mobileExpandedMenu = $state<'programs' | 'events' | null>(null);
+	let mobileExpandedMenu = $state<'programs' | null>(null);
 	const visiblePrograms = $derived(
 		($page.data.publicNavigation?.programs ?? []) as {
 			slug: string;
@@ -25,16 +25,8 @@
 			eyebrow: string;
 		}[]
 	);
-	const activeEvents = $derived(
-		($page.data.publicNavigation?.events ?? []) as {
-			slug: string;
-			title: string;
-			summary: string;
-			url: string;
-		}[]
-	);
 
-	function toggleMobileMenu(menu: 'programs' | 'events') {
+	function toggleMobileMenu(menu: 'programs') {
 		mobileExpandedMenu = mobileExpandedMenu === menu ? null : menu;
 	}
 
@@ -54,7 +46,7 @@
 
 	function getNavClass(active: boolean) {
 		if (active) {
-			return 'rounded-full bg-brand text-white hover:bg-brand hover:text-white';
+			return 'text-brand rounded-full font-bold';
 		}
 
 		return 'rounded-full bg-transparent text-slate-600 hover:bg-slate-100 hover:text-brand';
@@ -134,63 +126,6 @@
 													<ChevronRight class="size-4" />
 												</span>
 											</Button>
-										{/each}
-									</div>
-								</div>
-							</div>
-						</div>
-					{:else if nav.type === 'events'}
-						<div class="group relative">
-							<Button
-								variant="ghost"
-								size="lg"
-								class={`${getNavClass(active)} h-9 gap-1 px-4 text-sm transition-colors`}
-								aria-current={active ? 'page' : undefined}
-								aria-haspopup="true"
-							>
-								{nav.title}
-								<ChevronDown class="size-4 transition-transform group-hover:rotate-180" />
-							</Button>
-
-							<div
-								class="invisible absolute top-full left-1/2 z-80 w-[min(500px,calc(100vw-3rem))] -translate-x-1/2 pt-4 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-							>
-								<div
-									class="rounded-3xl border border-slate-100 bg-white p-5"
-								>
-									<div class="px-2 pt-1">
-										<p class="mt-2 font-raleway text-xl font-semibold text-slate-900">
-											Lihat acara yang sedang aktif
-										</p>
-									</div>
-
-									<div class="mt-4 space-y-1">
-										{#each activeEvents as event (event.slug)}
-											<Button
-												variant="ghost"
-												href={event.url}
-												class="group/event h-auto w-full justify-between gap-5 whitespace-normal rounded-2xl px-3 py-3.5 text-left hover:bg-[#f3f7ff] hover:text-brand"
-											>
-												<span>
-													<span class="block font-raleway text-base font-semibold">
-														{event.title}
-													</span>
-													<span
-														class="mt-1 line-clamp-1 block text-xs font-normal leading-5 text-slate-400"
-													>
-														{event.summary}
-													</span>
-												</span>
-												<span
-													class="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition group-hover/event:bg-brand group-hover/event:text-white"
-												>
-													<ChevronRight class="size-4" />
-												</span>
-											</Button>
-										{:else}
-											<p class="py-6 text-center text-sm text-slate-400">
-												Belum ada acara aktif.
-											</p>
 										{/each}
 									</div>
 								</div>
@@ -301,59 +236,6 @@
 													</span>
 													<ChevronRight class="size-4 shrink-0 text-slate-400" />
 												</Button>
-											{/each}
-										</div>
-									{/if}
-								</div>
-							{:else if nav.type === 'events'}
-								<div class="mt-1 overflow-hidden rounded-3xl bg-slate-50 p-3">
-									<button
-										type="button"
-										class="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left"
-										aria-expanded={mobileExpandedMenu === 'events'}
-										onclick={() => toggleMobileMenu('events')}
-									>
-										<span
-											class="flex size-9 items-center justify-center rounded-full bg-white text-brand"
-										>
-											<CalendarDays class="size-4.5" />
-										</span>
-										<div>
-											<p class="font-raleway text-base font-semibold text-slate-800">Acara</p>
-											<p class="text-[11px] text-slate-400">Lihat acara yang sedang aktif</p>
-										</div>
-										<ChevronRight
-											class={`ml-auto size-4 text-slate-500 transition-transform ${mobileExpandedMenu === 'events' ? 'rotate-90' : ''}`}
-										/>
-									</button>
-
-									{#if mobileExpandedMenu === 'events'}
-										<div class="mt-2 space-y-1">
-											{#each activeEvents as event (event.slug)}
-												<Button
-													variant="ghost"
-													class="h-auto w-full justify-between gap-4 whitespace-normal rounded-2xl bg-white px-3 py-3 text-left text-slate-700 hover:text-brand"
-													href={event.url}
-													onclick={() => (mobileMenuOpen = false)}
-												>
-													<span>
-														<span class="block font-raleway text-sm font-semibold"
-															>{event.title}</span
-														>
-														<span
-															class="mt-1 line-clamp-1 block text-[10px] font-normal text-slate-400"
-														>
-															{event.summary}
-														</span>
-													</span>
-													<ChevronRight class="size-4 shrink-0 text-slate-400" />
-												</Button>
-											{:else}
-												<p
-													class="rounded-2xl bg-white px-3 py-4 text-center text-xs text-slate-400"
-												>
-													Belum ada acara aktif.
-												</p>
 											{/each}
 										</div>
 									{/if}

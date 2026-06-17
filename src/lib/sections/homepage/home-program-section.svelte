@@ -3,18 +3,13 @@
 	import { Card } from '$lib/components/ui/card';
 	import type { PublicProgramSummary } from '$lib/types/program';
 
-	let {
-		programs
-	}: {
-		programs: (PublicProgramSummary & { heroImage: string; heroImageAlt: string })[];
-	} = $props();
+	let { programs }: { programs: PublicProgramSummary[] } = $props();
 </script>
 
 <section id="program" class="w-full max-w-7xl px-6 justify-center mx-auto py-12">
 	<p class="text-base text-brand text-center uppercase">Program Unggulan Berbasis AI</p>
-	<h2 class="text-4xl/12 md:text-6xl/16 font-semibold text-black text-center font-raleway px-6">
-		Program yang Dirancang <br />
-		Khusus Untuk Era AI dan Industri
+	<h2 class="text-4xl/12 md:text-6xl/16 max-w-5xl font-semibold text-black text-center font-raleway px-6 mx-auto text-center">
+		Program yang Dirancang Khusus Untuk Era AI dan Industri
 	</h2>
 
 	<div class="flex flex-col gap-4 py-6 md:py-12 w-full">

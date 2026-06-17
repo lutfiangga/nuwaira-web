@@ -23,7 +23,8 @@
 		Target,
 		FilePen,
 		BarChart3,
-		Tag
+		Tag,
+		UserCheck
 	} from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
 

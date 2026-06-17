@@ -6,6 +6,8 @@ export interface PublicProgramSummary {
 	title: string;
 	summary: string;
 	eyebrow: string;
+	heroImage: string;
+	heroImageAlt: string;
 }
 
 export interface ProgramPageData extends PublicProgramSummary {

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Navbar from '$lib/components/commons/navbar.svelte';
 	import ProgramAudience from '$lib/sections/commons/program-audience-section.svelte';
 	import ProgramFacilities from '$lib/sections/commons/program-facilities-section.svelte';
 	import Faq from '$lib/sections/commons/faq.svelte';
@@ -20,7 +19,6 @@
 	<meta property="og:image" content={data.program.heroImage} />
 </svelte:head>
 
-<Navbar />
 <ProgramHero program={data.program} />
 <ProgramIntro intro={data.program.intro} />
 <ProgramAudience />

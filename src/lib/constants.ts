@@ -8,7 +8,7 @@ export const NAV_MENU = [
 	{ title: 'Home', url: '/', type: 'link' },
 	{ title: 'Tentang Kami', url: '/#tentang-kami', type: 'link' },
 	{ title: 'Program', url: '/programs', type: 'programs' },
-	{ title: 'Acara', url: '/#acara', type: 'events' }
+	{ title: 'Acara', url: '/acara', type: 'link' }
 ] as const;
 
 export const BENEFITS = [

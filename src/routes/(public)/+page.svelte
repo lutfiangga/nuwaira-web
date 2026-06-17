@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Navbar from '$lib/components/commons/navbar.svelte';
 	import Hero from '$lib/sections/homepage/home-hero-section.svelte';
 	import Features from '$lib/sections/homepage/home-feature-section.svelte';
 	import Facilities from '$lib/sections/homepage/home-facilities-section.svelte';
@@ -18,7 +17,6 @@
 	/>
 </svelte:head>
 
-<Navbar />
 <Hero />
 <Features />
 <Facilities />

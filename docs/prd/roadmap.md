@@ -12,30 +12,39 @@ Selesai:
 - Approval intake.
 - Users admin.
 
-## Phase 2 - Intake Operations
+## Phase 2 - Program & Events
+
+Selesai:
+
+- CRUD program dengan detail, intro, offerings, dan batch.
+- CRUD acara publik dengan halaman detail dan pendaftaran.
+- Homepage sections dinamis dari database.
+- Manajemen konten: social media, FAQ, facilities.
+- Enrollment tracking.
+
+## Phase 3 - Intake Operations
 
 - Halaman riwayat pendaftar rejected.
 - Admin review notes dan audit status.
 - Bulk accept/reject.
-- Export data siswa dan calon siswa.
 - Notifikasi hasil review.
 - Pembatasan fitur student selama status masih pending.
 
-## Phase 3 - Student Profile
+## Phase 4 - Student Profile
 
 - Editable student profile.
 - Upload foto student.
 - Riwayat perubahan data.
 - Pengaturan privasi data sensitif.
 
-## Phase 4 - Bootcamp Operations
+## Phase 5 - Bootcamp Operations
 
-- Batch dan enrollment.
+- Batch dan enrollment lanjutan.
 - Schedule/session.
 - Attendance.
 - Certificate.
 
-## Phase 5 - Learning Experience
+## Phase 6 - Learning Experience
 
 - Class dashboard.
 - Materials.

@@ -7,7 +7,7 @@
 	let {
 		name,
 		label,
-		value = $bindable(''),
+		value = $bindable(),
 		placeholder = 'Pilih tanggal',
 		description,
 		error,
@@ -18,7 +18,7 @@
 	}: {
 		name: string;
 		label: string;
-		value?: string;
+		value?: string | Date | null;
 		placeholder?: string;
 		description?: string;
 		error?: string;
@@ -52,6 +52,7 @@
 	const minDate = $derived(parseIsoDate(min));
 	const maxDate = $derived(parseIsoDate(max));
 	const selectedDate = $derived(parseIsoDate(value));
+	const normalizedValue = $derived(toInputDate(value));
 	const displayValue = $derived(
 		selectedDate
 			? new Intl.DateTimeFormat('id-ID', {
@@ -88,11 +89,17 @@
 		);
 	}
 
-	function parseIsoDate(dateValue?: string) {
-		if (!dateValue || !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return null;
-		const [year, month, day] = dateValue.split('-').map(Number);
-		const date = new Date(year, month - 1, day);
-		return Number.isNaN(date.getTime()) ? null : date;
+	function parseIsoDate(dateValue?: string | Date | null) {
+		const inputValue =
+			dateValue instanceof Date
+				? toIsoDate(dateValue)
+				: typeof dateValue === 'string'
+					? dateValue.slice(0, 10)
+					: '';
+		const validInput = /^\d{4}-\d{2}-\d{2}$/.test(inputValue);
+		const [year, month, day] = validInput ? inputValue.split('-').map(Number) : [];
+		const date = validInput ? new Date(year, month - 1, day) : null;
+		return date && !Number.isNaN(date.getTime()) ? date : null;
 	}
 
 	function toIsoDate(date: Date) {
@@ -100,6 +107,11 @@
 		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const day = String(date.getDate()).padStart(2, '0');
 		return `${year}-${month}-${day}`;
+	}
+
+	function toInputDate(dateValue?: string | Date | null) {
+		const parsed = parseIsoDate(dateValue);
+		return parsed ? toIsoDate(parsed) : '';
 	}
 
 	function isDisabledDate(date: Date) {
@@ -234,7 +246,7 @@
 		</Popover.Content>
 	</Popover.Root>
 
-	<input type="hidden" {name} {value} {required} />
+	<input type="hidden" {name} value={normalizedValue} {required} />
 
 	{#if error}
 		<p class="text-sm text-red-600">{error}</p>

@@ -90,7 +90,7 @@ export class ProgramService {
 
 		return {
 			programs: programRows.filter((item) => visibleProgramIds.has(item.id)),
-			events: events.map((item) => ({ ...item, url: item.url || '/#acara' })),
+			events: events.map((item) => ({ ...item, url: `/acara/${item.slug}` })),
 			socialLinks: socialLinkRows
 		};
 	}

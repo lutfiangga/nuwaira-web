@@ -14,13 +14,18 @@ Folder ini menjadi source of truth untuk scope produk dan kontrak implementasi.
 - Framework: SvelteKit 2 dengan Svelte 5.
 - Database: PostgreSQL melalui Drizzle ORM dan migration SQL.
 - Route groups:
-  - `(public)` untuk landing, register, login, dan logout.
-  - `(shared)` untuk dashboard role-aware.
-  - `(admin)` untuk siswa, calon siswa, dan manajemen user.
+  - `(public)` untuk landing, register, login, logout, acara, dan detail program.
+  - `(shared)` untuk dashboard role-aware dan attendance.
+  - `(admin)` untuk siswa, calon siswa, users, program, acara, konten, dan enrollment.
 - Auth menggunakan Argon2, tabel `session`, dan cookie `auth-session`.
 - Data lokasi Indonesia berasal dari Emsifa melalui proxy `/api/locations`.
 - NIK dienkripsi AES-256-GCM dengan key turunan dari `SECRET_KEY`.
 - Intake student menggunakan status `pending`, `accepted`, dan `rejected`.
+- Manajemen program: CRUD program, intro, offerings, batches, milestones, metrics, journeys, paragraphs, checklists, FAQ.
+- Manajemen acara: CRUD acara publik, pendaftaran acara dengan Turnstile.
+- Konten dinamis: homepage sections, social media, facilities, registration perks dari database.
+- Navbar dan footer disembunyikan pada halaman pendaftaran (register siswa dan acara).
+- Turnstile widget menggunakan pattern script-once dengan cleanup on unmount.
 
 ## Aturan Maintenance
 
@@ -51,6 +56,3 @@ bun run build
 - [Module Contract](srs/module-contract.md)
 - [UML Baseline](design-system-uml/README.md)
 
-## Komponen Reusable
-
-- `$lib/components/custom-table/data-table.svelte` — Komponen tabel seragam untuk semua halaman admin (`/users`, `/students`, `/prospective-students`). Mendukung gradient header, search, export, column visibility, selection, pagination server-side, dan custom cell rendering via snippet. Tidak menggunakan shadow.

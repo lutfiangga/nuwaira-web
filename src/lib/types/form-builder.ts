@@ -24,6 +24,12 @@ export interface BaseFieldConfig {
 	description?: string; // Helper text
 	disabled?: boolean;
 	class?: string; // Custom classes for the wrapper
+	defaultValue?: unknown;
+	visibleWhen?: {
+		field: string;
+		equals?: string | number | boolean | null;
+		notEquals?: string | number | boolean | null;
+	};
 }
 
 export interface TextFieldConfig extends BaseFieldConfig {
@@ -32,6 +38,12 @@ export interface TextFieldConfig extends BaseFieldConfig {
 	min?: number;
 	max?: number;
 	slugOrigin?: string; // Name of the field to generate slug from
+}
+
+export interface DateFieldConfig extends BaseFieldConfig {
+	type: 'date';
+	min?: string;
+	max?: string;
 }
 
 export interface TextareaFieldConfig extends BaseFieldConfig {
@@ -88,6 +100,7 @@ export interface CustomComponentConfig {
 
 export type FieldConfig =
 	| TextFieldConfig
+	| DateFieldConfig
 	| TextareaFieldConfig
 	| SelectFieldConfig
 	| ComboboxFieldConfig

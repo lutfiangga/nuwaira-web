@@ -5,10 +5,10 @@
 
 	let {
 		config,
-		value = $bindable([])
+		value = $bindable()
 	}: {
 		config: CheckboxGroupFieldConfig;
-		value: Array<string | number>;
+		value?: Array<string | number>;
 	} = $props();
 
 	function selectedValues() {

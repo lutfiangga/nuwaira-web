@@ -29,6 +29,11 @@ export const attendanceStatusEnum = pgEnum('attendance_status', [
 	'absent'
 ]);
 export const locationTypeEnum = pgEnum('location_type', ['remote', 'onsite']);
+export const eventRegistrationStatusEnum = pgEnum('event_registration_status', [
+	'pending',
+	'confirmed',
+	'cancelled'
+]);
 
 export const program = pgTable('programs', {
 	id: text('id').primaryKey(),
@@ -250,6 +255,13 @@ export const publicEvent = pgTable('events', {
 	slug: text('slug').notNull().unique(),
 	title: text('title').notNull(),
 	summary: text('summary').notNull(),
+	description: text('description'),
+	eventType: text('event_type'),
+	imageUrl: text('image_url'),
+	imageAlt: text('image_alt'),
+	location: text('location'),
+	priceAmount: integer('price_amount'),
+	currency: text('currency').notNull().default('IDR'),
 	startAt: timestamp('start_at', { withTimezone: true, mode: 'date' }),
 	endAt: timestamp('end_at', { withTimezone: true, mode: 'date' }),
 	registrationUrl: text('registration_url'),
@@ -257,6 +269,31 @@ export const publicEvent = pgTable('events', {
 	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
+
+export const eventRegistration = pgTable(
+	'event_registrations',
+	{
+		id: text('id').primaryKey(),
+		eventId: text('event_id')
+			.notNull()
+			.references(() => publicEvent.id, { onDelete: 'cascade' }),
+		fullName: text('full_name').notNull(),
+		email: text('email').notNull(),
+		phone: text('phone').notNull(),
+		domicile: text('domicile').notNull(),
+		participantType: text('participant_type').notNull(),
+		organizationName: text('organization_name'),
+		referralSource: text('referral_source').notNull(),
+		referralSourceOther: text('referral_source_other'),
+		interestedInCodingAi: boolean('interested_in_coding_ai').notNull().default(false),
+		status: eventRegistrationStatusEnum('status').notNull().default('pending'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	},
+	(table) => [
+		uniqueIndex('event_registration_event_email_idx').on(table.eventId, table.email)
+	]
+);
 
 export const programAudienceBenefit = pgTable('program_audience_benefits', {
 	id: text('id').primaryKey(),
@@ -301,3 +338,4 @@ export const socialLink = pgTable('social_links', {
 });
 
 export type EnrollmentStatus = (typeof enrollmentStatusEnum.enumValues)[number];
+export type EventRegistrationStatus = (typeof eventRegistrationStatusEnum.enumValues)[number];

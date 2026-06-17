@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import type { CheckboxFieldConfig } from '$lib/types/form-builder';
 
-	let { config, value = $bindable(false) }: { config: CheckboxFieldConfig; value: any } = $props();
+	let { config, value = $bindable() }: { config: CheckboxFieldConfig; value: any } = $props();
 </script>
 
 <div class="flex items-center space-x-2 {config.class}">
@@ -12,7 +12,7 @@
 		<Switch
 			id={config.name}
 			name={config.name}
-			checked={value}
+			checked={Boolean(value)}
 			onCheckedChange={(v) => (value = v)}
 			disabled={config.disabled}
 		/>
@@ -20,7 +20,7 @@
 		<Checkbox
 			id={config.name}
 			name={config.name}
-			checked={value}
+			checked={Boolean(value)}
 			onCheckedChange={(v) => (value = v)}
 			disabled={config.disabled}
 		/>
@@ -41,5 +41,5 @@
 		{/if}
 	</div>
 	<!-- Hidden input for form submission -->
-	<input type="hidden" name={config.name} value={value ? 'true' : 'false'} />
+	<input type="hidden" name={config.name} value={Boolean(value) ? 'true' : 'false'} />
 </div>
